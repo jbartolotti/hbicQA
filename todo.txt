@@ -1,0 +1,12 @@
+Let user enter afnipath and bxh path and use in command references, instead of requiring that they are present on the path.
+
+make checkPath() check for R-Drive/Brooks and /xnatdata
+
+let date passed to move_qc be a vector of dates to loop over
+
+add QA visual inspection function from ~/R-Drive/Bartolotti_J/QA/QA_protocol.Rmd
+
+in hbicqa, make scan4input/output paths be customizable
+
+write and add ASL QA processing
+write and add ADNI gradient nonlinearity processing
