@@ -18,3 +18,36 @@ checkPath <- function(){
   return(syspath)
 
 }
+
+readMeasure <- function(measure,file)
+{
+  #read the value for a measure of interest from an xml document
+  val <- system(sprintf('cat %s | grep \'"%s"\' ',file,measure),intern = TRUE)
+  if (length(val) > 0)
+  {
+    close_tag <- which(strsplit(val, "")[[1]]==">")
+    open_tag <- which(strsplit(val, "")[[1]]=="<")
+    val <- (substr(val,close_tag[1]+1,open_tag[2]-1))
+  } else (val <- NA)
+  return(val)
+}
+
+allMeasures <- function(){
+  return(c('mean','SNR','SFNR','std','percentFluc','drift','driftfit','rdc',
+           'minCMassX','maxCMassX','meanCMassX','dispCMassX','driftCMassX',
+           'minCMassY','maxCMassY','meanCMassY','dispCMassY','driftCMassY',
+           'minCMassZ','maxCMassZ','meanCMassZ','dispCMassZ','driftCMassZ',
+           'minFWHMX','maxFWHMX','meanFWHMX',
+           'minFWHMY','maxFWHMY','meanFWHMY',
+           'minFWHMZ','maxFWHMZ','meanFWHMZ',
+           'meanGhost','meanBrightGhost'))
+}
+
+fixQAfoldernames <- function(qa_measures){
+  qa_measures$folder[qa_measures$folder == 'QC_012317_rescan'] <- 'QC_012417'
+  qa_measures$folder[qa_measures$folder == 'QC_07032019'] <- 'QC_070319'
+  qa_measures$folder[qa_measures$folder == 'QC_07082019'] <- 'QC_070819'
+  qa_measures$folder[qa_measures$folder == 'QC_07152019'] <- 'QC_071519'
+  qa_measures <- qa_measures[qa_measures$folder != 'QC_07032019+RN',]
+  return(qa_measures)
+}

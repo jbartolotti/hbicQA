@@ -1,8 +1,6 @@
-Let user enter afnipath and bxh path and use in command references, instead of requiring that they are present on the path.
+Let user enter afnipath and bxh path and use those paths in command references, instead of requiring that they are present on the global path.
 
 make checkPath() check for R-Drive/Brooks and /xnatdata
-
-let date passed to move_qc be a vector of dates to loop over
 
 add QA visual inspection function from ~/R-Drive/Bartolotti_J/QA/QA_protocol.Rmd
 
@@ -10,3 +8,11 @@ in hbicqa, make scan4input/output paths be customizable
 
 write and add ASL QA processing
 write and add ADNI gradient nonlinearity processing
+
+make findNewScans() to automatically get a list of unprocessed dates from .../archive
+
+make fBIRNreport read a csv file for preextracted measures for old scans so you don't need to process them again. Also write newly processed scans to this file.
+
+allow selection of subset of all scans in listqadirs.
+
+test fBIRN_Report()

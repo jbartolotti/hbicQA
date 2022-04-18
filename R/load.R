@@ -39,3 +39,55 @@ move_qc <- function(date, savedir, rawdir, overwrite = FALSE){
 
   return(notes)
 }
+
+readQAMeasures <- function(basedir, analysisdir, measures, scans, fixfoldernames = TRUE){
+  qa_dirs <- listQADirs(basedir,analysisdir,scans)
+  qa_measures <- initializeQAdf(measures) #data frame: cols folder,scandate,measures[..]
+  for (qa in qa_dirs)
+  {
+    qa_xml_file <- file.path(basedir,analysisdir,qa,'summaryQA.xml')
+    if(!file.exists(qa_xml_file))
+    {
+      warning(sprintf('Warning: no summaryQA.xml file found in %s',qa_xml_file))
+      qa_measures[dim(qa_measures)[1]+1,] = c(qa,NA,NA,NA,NA,NA,NA)
+    }else
+    {
+      qa_measures[dim(qa_measures)[1]+1,] = NA
+      rr <- dim(qa_measures[1])
+      qa_measures[rr,'folder'] <- qa
+      qa_measures[rr,'scandate'] <- readMeasure('scandate',qa_xml_file)
+      for (mm in measures)
+      {
+        qa_measures[rr,mm] <- as.numeric(readMeasure(mm,qa_xml_file)[1])
+      }
+    }
+  }
+  if(fixfoldernames){qa_measures <- fixQAfoldernames(qa_measures)}
+
+  #get epochs from foldernames and scandates
+  qa_measures$folder_date <- do.call('c', lapply(qa_measures$folder, function(x){as.Date(gsub('QC_','',x), format = '%m%d%y')}))
+  qa_measures$folder_epoch <- as.numeric(qa_measures$folder_date) #days since epoch start
+  qa_measures$scandate_epoch <- as.numeric(as.Date(qa_measures$scandate)) #days since epoch start
+  qa_measures$epoch_delta <- qa_measures$scandate_epoch - qa_measures$folder_epoch
+
+  return(qa_measures)
+}
+
+listQADirs <- function(basedir,analysisdir,scans){
+  qa_dirs <- dir(file.path(basedir,analysisdir))
+  qa_dirs <- qa_dirs[grep('QC_',qa_dirs)]
+  qa_dirs <- qa_dirs[grep('_fBIRN',qa_dirs,invert = TRUE)]
+  if (scans != 'all'){warning('selecting subset of scans for report not enabled yet.')}
+  return(qa_dirs)
+}
+
+initializeQAdf <- function(measures){
+  qa_measures <- data.frame(folder = as.character(),
+                            scandate = as.character(),
+                            stringsAsFactors = FALSE)
+  qa_measures <- data.frame(matrix(nrow = 0, ncol = 2+length(measures)))
+  colnames(qa_measures) <- c('folder','scandate',measures)
+  return(qa_measures)
+}
+
+
