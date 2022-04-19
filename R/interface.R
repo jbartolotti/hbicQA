@@ -50,7 +50,7 @@ fBIRN_Report <- function(measures = 'all',
                          ){
 
   if(measures == 'all'){measures <- allMeasures()}
-  if(!is.na(readfrom) & length(readfrom)>0){read_qa_measures <- read.csv(file.path(reportdir,readfrom))}else{read_qa_measures <- NA}
+  if(!is.na(readfrom) && length(readfrom)>0 && file.exists(file.path(reportdir,readfrom))){read_qa_measures <- read.csv(file.path(reportdir,readfrom))}else{read_qa_measures <- NA}
   qa_measures <- readQAMeasures(basedir, analysisdir, measures, read_qa_measures = read_qa_measures,
                                 scan_names = scan_names, scans_after_epoch = scans_after_epoch, fixfoldernames = TRUE)
   mynow <- strftime(Sys.time(),format='%Y-%d-%m_%H-%M-%S')
