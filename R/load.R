@@ -40,8 +40,17 @@ move_qc <- function(date, savedir, rawdir, overwrite = FALSE){
   return(notes)
 }
 
-readQAMeasures <- function(basedir, analysisdir, measures, scans, fixfoldernames = TRUE){
-  qa_dirs <- listQADirs(basedir,analysisdir,scans)
+readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA, scan_names='all',scans_after_epoch='all' , fixfoldernames = TRUE){
+  qa_dirs <- listQADirs(basedir,analysisdir,
+                        scan_names = scan_names,scans_after_epoch = scans_after_epoch,
+                        fixfoldernames = fixfoldernames)
+  #If all measures of interest are in the already completed report,
+  #then only read directories that don't already exist in the already completed report
+  if(!is.na(read_qa_measures) && all(measures %in% colnames(read_qa_measures))){
+    already_read <- read_qa_measures$folder
+    qa_dirs <- qa_dirs[!(qa_dirs %in% already_read)]
+  }
+
   qa_measures <- initializeQAdf(measures) #data frame: cols folder,scandate,measures[..]
   for (qa in qa_dirs)
   {
@@ -49,7 +58,7 @@ readQAMeasures <- function(basedir, analysisdir, measures, scans, fixfoldernames
     if(!file.exists(qa_xml_file))
     {
       warning(sprintf('Warning: no summaryQA.xml file found in %s',qa_xml_file))
-      qa_measures[dim(qa_measures)[1]+1,] = c(qa,NA,NA,NA,NA,NA,NA)
+      qa_measures[dim(qa_measures)[1]+1,] = c(qa,rep(NA,dim(qa_measures)[2]-1))
     }else
     {
       qa_measures[dim(qa_measures)[1]+1,] = NA
@@ -62,7 +71,6 @@ readQAMeasures <- function(basedir, analysisdir, measures, scans, fixfoldernames
       }
     }
   }
-  if(fixfoldernames){qa_measures <- fixQAfoldernames(qa_measures)}
 
   #get epochs from foldernames and scandates
   qa_measures$folder_date <- do.call('c', lapply(qa_measures$folder, function(x){as.Date(gsub('QC_','',x), format = '%m%d%y')}))
@@ -70,14 +78,34 @@ readQAMeasures <- function(basedir, analysisdir, measures, scans, fixfoldernames
   qa_measures$scandate_epoch <- as.numeric(as.Date(qa_measures$scandate)) #days since epoch start
   qa_measures$epoch_delta <- qa_measures$scandate_epoch - qa_measures$folder_epoch
 
+  #combine the processed measures with the already completed file, using only fields that exist in the current file
+  if(!is.na(read_qa_measures) && all(measures %in% colnames(read_qa_measures))){
+    qa_measures <- rbind(qa_measures, read_qa_measures[,colnames(read_qa_measures %in% qa_measures)])
+  }
   return(qa_measures)
 }
 
-listQADirs <- function(basedir,analysisdir,scans){
+#scan_names excludes folders whose names are not in scan_names.
+#scans_after_epoch takes a number.
+#   If it is > 5000, it uses that number as the minimum epoch(e.g. as.numeric(as.Date('2020-01-01')))
+#   If it is < 5000, it makes the minimum that many days before the current date. So 90 will return all folders with a datename that is < 90 days back.
+#Note that this way of filtering based on foldernames is not perfect because the folder names had errors.
+
+listQADirs <- function(basedir,analysisdir,scan_names='all',scans_after_epoch='all',fixfoldernames=TRUE){
   qa_dirs <- dir(file.path(basedir,analysisdir))
   qa_dirs <- qa_dirs[grep('QC_',qa_dirs)]
   qa_dirs <- qa_dirs[grep('_fBIRN',qa_dirs,invert = TRUE)]
-  if (scans != 'all'){warning('selecting subset of scans for report not enabled yet.')}
+  if(fixfoldernames){qa_dirs <- fixQAfoldernames(qa_dirs)}
+  if (length(scan_names)>1 || scan_names != 'all'){
+    qa_dirs <- qa_dirs[qa_dirs %in% scan_names]
+  }
+  if (scans_after_epoch != 'all'){
+    if(scans_after_epoch > 5000){min_epoch <- scans_after_epoch
+    }else{min_epoch <- as.numeric(Sys.Date())-scans_after_epoch}
+
+    qa_epoch <- unlist(lapply(qa_dirs,function(x){as.numeric(as.Date(gsub('QC_','',x), format = '%m%d%y'))}))
+    qa_dirs <- qa_dirs[qa_epoch > min_epoch]
+    }
   return(qa_dirs)
 }
 

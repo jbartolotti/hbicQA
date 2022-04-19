@@ -7,7 +7,7 @@ hbicqa <- function(datelist='lookup',
                    reportdir = '~/R-Drive/Bartolotti_J/QA',
                    doreports = FALSE){
   #checks for availability of system functions, i.e. afni and bxh_xcede
-  syspath <- checkPath()
+  syspath <- checkPath(basedir,rawdir,reportdir)
 
 # if (datelist == 'lookup'){datelist <- findNewScans()}
   for(date in datelist){
@@ -30,22 +30,29 @@ hbicqa <- function(datelist='lookup',
   }
 
   if (doreports){
-    fBIRN_Report('all', basedir, analysisdir, reportdir)
+    fBIRN_Report(measures = 'all', scan_names = 'all', scans_after_epoch = 'all',
+                 basedir = basedir, analysisdir = analysisdir, reportdir = reportdir,
+                 readfrom = 'QA_Report.csv')
   }
 }
 
 
 #' @export
 fBIRN_Report <- function(measures = 'all',
-                         scans = 'all',
+                         scan_names = 'all',
+                         scans_after_epoch = 'all',
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',
-                         reportdir = '~/R-Drive/Bartolotti_J/QA'){
+                         reportdir = '~/R-Drive/Bartolotti_J/QA',
+                         writenewest = TRUE,
+                         readfrom = 'QA_Report.csv'
+                         ){
 
   if(measures == 'all'){measures <- allMeasures()}
-
-  qa_measures <- readQAMeasures(basedir, analysisdir, measures, scans, fixfoldernames = TRUE)
-
-  write.csv(qa_measures,file.path(reportdir,'report220314.csv'),row.names = FALSE)
-
+  if(!is.na(readfrom) & length(readfrom)>0){read_qa_measures <- read.csv(file.path(reportdir,readfrom))}else{read_qa_measures <- NA}
+  qa_measures <- readQAMeasures(basedir, analysisdir, measures, read_qa_measures = read_qa_measures,
+                                scan_names = scan_names, scans_after_epoch = scans_after_epoch, fixfoldernames = TRUE)
+  write.csv(qa_measures,file.path(reportdir,sprintf('QA_report_%s.csv',Sys.Date())),row.names = FALSE)
+  if(writenewest){file.copy(file.path(reportdir,sprintf('QA_report_%s.csv',Sys.Date())),file.path(reportdir,'QA_report.csv') , overwrite = TRUE)}
+  return(qa_measures)
 }
