@@ -99,7 +99,7 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
     message('binding')
     print(qa_measures)
     qa_measures <- rbind(qa_measures, read_qa_measures[,colnames(read_qa_measures %in% qa_measures)])
-    print(read_qa_measures[,colnames(read_qa_measures %in% qa_measures)])
+    print(read_qa_measures[,colnames(read_qa_measures) %in% qa_measures])
     print(qa_measures)
   }
   return(qa_measures)
