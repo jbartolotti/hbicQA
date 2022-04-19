@@ -53,7 +53,8 @@ fBIRN_Report <- function(measures = 'all',
   if(!is.na(readfrom) & length(readfrom)>0){read_qa_measures <- read.csv(file.path(reportdir,readfrom))}else{read_qa_measures <- NA}
   qa_measures <- readQAMeasures(basedir, analysisdir, measures, read_qa_measures = read_qa_measures,
                                 scan_names = scan_names, scans_after_epoch = scans_after_epoch, fixfoldernames = TRUE)
-  write.csv(qa_measures,file.path(reportdir,sprintf('QA_report_%s.csv',Sys.Date())),row.names = FALSE)
-  if(writenewest){file.copy(file.path(reportdir,sprintf('QA_report_%s.csv',Sys.Date())),file.path(reportdir,'QA_report.csv') , overwrite = TRUE)}
+  mynow <- strftime(Sys.time(),format='%Y-%d-%m_%H-%M-%S')
+  write.csv(qa_measures,file.path(reportdir,sprintf('QA_report_%s.csv',mynow)),row.names = FALSE)
+  if(writenewest){file.copy(file.path(reportdir,sprintf('QA_report_%s.csv',mynow)),file.path(reportdir,'QA_report.csv') , overwrite = TRUE)}
   return(qa_measures)
 }
