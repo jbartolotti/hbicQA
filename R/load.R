@@ -1,3 +1,18 @@
+
+findNewScans <- function(rawdir, targetdir){
+  arcscan <- dir(rawdir)
+  arcscan <- arcscan[grep('qc',arcscan)]
+  imscan <- imscan[grep('zip',imscan,invert =TRUE)]
+  imscan <- imscan[grep('qc',imscan)]
+
+  uncopied <- arcscan[!(arcscan %in% imscan)]
+
+
+  }
+
+
+
+
 move_qc <- function(date, savedir, rawdir, overwrite = FALSE){
   datestr <- sprintf('%06d',date)
   rawfile <- file.path(rawdir,sprintf('qc_%s',datestr))

@@ -9,3 +9,15 @@ write and add ADNI gradient nonlinearity processing
 
 make findNewScans() to automatically get a list of unprocessed dates from .../archive
 
+
+deal with this:
+https://bioconductor.org/packages/devel/bioc/vignettes/EBImage/inst/doc/EBImage-introduction.html
+-------
+EBImage is an R package distributed as part of the Bioconductor project. To install the package, start R and enter:
+
+install.packages("BiocManager")
+BiocManager::install("EBImage")
+Once EBImage is installed, it can be loaded by the following command.
+
+library("EBImage")
+----------

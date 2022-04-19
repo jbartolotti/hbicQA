@@ -1,5 +1,6 @@
 
 checkPath <- function(basedir,rawdir,reportdir){
+  # addpath /usr/local/bin/bxh_xcede_tools-1.11.14/bin
   syspath <- list()
   syspath$afni <- suppressWarnings(system2('which', args = 'afni', stdout = TRUE,stderr = FALSE))
   syspath$bxh <- suppressWarnings(system2('which', args = 'dicom2bxh', stdout = TRUE,stderr = FALSE))
