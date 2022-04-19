@@ -39,8 +39,8 @@ hbicqa <- function(datelist='lookup',
 
 
 #' @export
-fBIRN_Report <- function(measures = 'all',
-                         scan_names = 'all',
+fBIRN_Report <- function(scan_names = 'all',
+                         measures = 'all',
                          scans_after_epoch = 'all',
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',

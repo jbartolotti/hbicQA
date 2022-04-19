@@ -94,13 +94,8 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
   qa_measures$epoch_delta <- qa_measures$scandate_epoch - qa_measures$folder_epoch
 
   #combine the processed measures with the already completed file, using only fields that exist in the current file
-#  print(read_qa_measures)
   if(!is.na(read_qa_measures) && all(measures %in% colnames(read_qa_measures))){
-    message('binding')
-   # print(qa_measures)
     qa_measures <- rbind(qa_measures, read_qa_measures[,colnames(read_qa_measures) %in% colnames(qa_measures)])
-#    print(read_qa_measures[,colnames(read_qa_measures) %in% colnames(qa_measures)])
-  #  print(qa_measures)
   }
   return(qa_measures)
 }
