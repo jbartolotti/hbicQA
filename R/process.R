@@ -33,3 +33,37 @@ runfBIRN <- function(date, indir4, outdir4){
   notes$message <- mymessage
   return(notes)
 }
+windir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA'
+getTolerances <- function(report){
+  if(class(report) == 'character'){
+    reportdat <- read.csv(report)
+  }
+  longreport <- melt(setDT(reportdat),
+                     id.vars = c('folder','scandate','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
+                     variable.name = "measure")
+  longreport <- as.data.frame(longreport)
+  dayrange <- 30
+  mycol <- sprintf('value_smooth%s',dayrange)
+  longreport[,mycol] <- NA
+  #colnames(longreport)[colnames(longreport) == 'temp'] = sprintf('value_smooth%s',dayrange)
+  for(mes in unique(longreport$measure)){
+    for(i in which(longreport$measure == mes)){
+      thisepoch <- longreport$scandate_epoch[i]
+      myrows <- which(longreport$measure == mes &
+                        !is.na(longreport$scandate_epoch) &
+                        longreport$scandate_epoch > thisepoch - dayrange &
+                        longreport$scandate_epoch < thisepoch + dayrange)
+      longreport[i,mycol] <- mean(longreport$value[myrows],na.rm = TRUE)
+    }
+
+  }
+
+
+
+ggplot(longreport, aes(x = scandate_epoch, y = value)) +
+  theme_bw() +
+  geom_point() +
+  geom_line(aes(y = value_smooth30),color = 'red') +
+  facet_wrap(.~measure,scales = 'free')
+ggsave('measures.png',width = 30, height = 20)
+}

@@ -1,3 +1,9 @@
+check that measures aren't duplicates of each other by mistake (CMassX?).
+remove big outlier from historical data
+get global baseline& range, plus local baseline&range for tolerances
+
+extract that other value that phil talked about
+
 Let user enter afnipath and bxh path and use those paths in command references, instead of requiring that they are present on the global path.
 
 add QA visual inspection function from ~/R-Drive/Bartolotti_J/QA/QA_protocol.Rmd

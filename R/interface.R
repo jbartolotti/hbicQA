@@ -5,7 +5,8 @@ hbicqa <- function(datelist='lookup',
                    analysisdir = 'Analysis',
                    rawdir = '/xnatdata/arch/9999/arc001',
                    reportdir = '~/R-Drive/Bartolotti_J/QA',
-                   doreports = FALSE){
+                   doreports = FALSE,
+                   dofigures = FALSE){
   #checks for availability of system functions, i.e. afni and bxh_xcede
   syspath <- checkPath(basedir,rawdir,reportdir)
 
@@ -29,12 +30,16 @@ hbicqa <- function(datelist='lookup',
     #Monthly ADNI Gradient Nonlinearity goes here
   }
 
+  qa_measures <- NA
   if (doreports){
-    fBIRN_Report(measures = 'all', scan_names = 'all', scans_after_epoch = 'all',
+    qa_measures <- fBIRN_Report(measures = 'all', scan_names = 'all', scans_after_epoch = 'all',
                  basedir = basedir, analysisdir = analysisdir, reportdir = reportdir,
                  readfrom = 'QA_Report.csv')
   }
-
+  if (dofigures){
+    if (!is.na(qa_measures)){myreport <- qa_measures} else{myreport <- file.path(reportdir,'QA_Report.csv')}
+    fBIRN_Figures(report = myreport)
+  }
 }
 
 
@@ -57,4 +62,10 @@ fBIRN_Report <- function(scan_names = 'all',
   write.csv(qa_measures,file.path(reportdir,sprintf('QA_report_%s.csv',mynow)),row.names = FALSE)
   if(writenewest){file.copy(file.path(reportdir,sprintf('QA_report_%s.csv',mynow)),file.path(reportdir,'QA_report.csv') , overwrite = TRUE)}
   return(qa_measures)
+}
+
+#' @export
+fBIRN_Figures <- function(report){
+  tol <- getTolerances(report)
+
 }
