@@ -29,6 +29,7 @@ hbicqa <- function(datelist='lookup',
 
     #Monthly ADNI Gradient Nonlinearity goes here
   }
+  message(sprintf('fBIRN done for: %s',paste(datelist,collapse = ' ')))
 
   qa_measures <- NA
   if (doreports){
@@ -66,6 +67,7 @@ fBIRN_Report <- function(scan_names = 'all',
 
 #' @export
 fBIRN_Figures <- function(report){
-  tol <- getTolerances(report)
+  longreport <- getTolerances(report)
+  makeFigures(longreport)
 
 }

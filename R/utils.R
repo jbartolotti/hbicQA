@@ -13,7 +13,7 @@ checkPath <- function(basedir,rawdir,reportdir){
   } else {message(sprintf('Using AFNI at %s',syspath$afni))}
   if (length(syspath$bxh) == 0 ){
     missing_path <- TRUE
-    missing_path_message <- c(missing_path_message,'Error: hbicQA requires BXH tools. Add bxh_xcede_tools to the path and rerun.\n  ')
+    missing_path_message <- c(missing_path_message,'Error: hbicQA requires BXH tools. Add bxh_xcede_tools to the path and rerun.\n  e.g. addpath /usr/local/bin/bxh_xcede_tools-1.11.14/bin \n  ')
   } else {message(sprintf('Using BXH xcede at %s',syspath$bxh))}
   if (!file.exists(basedir)){
     missing_path <- TRUE

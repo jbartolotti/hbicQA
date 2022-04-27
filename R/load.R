@@ -69,6 +69,7 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
   qa_measures <- initializeQAdf(measures) #data frame: cols folder,scandate,measures[..]
   for (qa in qa_dirs)
   {
+    message(sprintf('extracting measures for: %s',qa))
     qa_xml_file <- file.path(basedir,analysisdir,qa,'summaryQA.xml')
     if(!file.exists(qa_xml_file))
     {
@@ -86,12 +87,11 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
       }
     }
   }
-
-  #get epochs from foldernames and scandates
-  qa_measures$folder_date <- do.call('c', lapply(qa_measures$folder, function(x){as.Date(gsub('QC_','',x), format = '%m%d%y')}))
-  qa_measures$folder_epoch <- as.numeric(qa_measures$folder_date) #days since epoch start
-  qa_measures$scandate_epoch <- as.numeric(as.Date(qa_measures$scandate)) #days since epoch start
-  qa_measures$epoch_delta <- qa_measures$scandate_epoch - qa_measures$folder_epoch
+ #get epochs from foldernames and scandates
+  qa_measures$folder_date <- as.character(do.call('c', lapply(qa_measures$folder, function(x){as.Date(gsub('QC_','',x), format = '%m%d%y')})))
+    qa_measures$folder_epoch <- as.numeric(qa_measures$folder_date) #days since epoch start
+    qa_measures$scandate_epoch <- as.numeric(as.Date(qa_measures$scandate)) #days since epoch start
+    qa_measures$epoch_delta <- qa_measures$scandate_epoch - qa_measures$folder_epoch
 
   #combine the processed measures with the already completed file, using only fields that exist in the current file
   if(!is.na(read_qa_measures) && all(measures %in% colnames(read_qa_measures))){

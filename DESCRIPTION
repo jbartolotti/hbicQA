@@ -13,4 +13,7 @@ RoxygenNote: 7.1.2
 Imports:
   oro.dicom,
   EBImage,
-  magick
+  magick,
+  reshape2,
+  ggplot2,
+  data.table
