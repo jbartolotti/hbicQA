@@ -39,7 +39,7 @@ getTolerances <- function(report){
   if(class(report) == 'character'){
     reportdat <- read.csv(report)
   }
-  longreport <- reshape2::melt(setDT(reportdat),
+  longreport <- reshape2::melt(data.table::setDT(reportdat),
                      id.vars = c('folder','scandate','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
                      variable.name = "measure")
   longreport <- as.data.frame(longreport)

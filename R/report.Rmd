@@ -1,0 +1,122 @@
+---
+title: "HBIC QA"
+date: "`r format(Sys.time(), format = '%a %d %b %Y')`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+      toc_collapsed: true
+      toc_depth: 3
+      number_sections: true
+      theme: lumen
+params:
+    mytext: ['a','b']
+    mynums: [1, 2]
+    longreport: NA
+    figdir: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r echo = FALSE}
+text_green <- '#3CA61C'
+text_red <- '#E12A1B'
+longreport <- params$longreport
+figdir <- params$figdir
+
+
+lastscan <- longreport[longreport$scandate_epoch == max(longreport$scandate_epoch,na.rm = TRUE),]
+lastscan <- lastscan[!is.na(lastscan$scandate_epoch),]
+lastscandate_str <- format(as.Date(unique(lastscan$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
+allpass <- all(lastscan$z_value_smooth60 <=2 & lastscan$z_value_smooth60 >= -2) 
+if(allpass){
+  passcolor = text_green
+  passtext = 'All metrics in acceptable range.'
+} else {
+  passcolor = text_red
+  passtext = 'Attention: metrics out of range.'
+}
+
+#Table for most recent scan core values
+measure_pretty <- list()
+measure_pretty$SNR <- 'SNR'
+measure_pretty$SFNR <- 'SFNR'
+measure_pretty$percentFluc <- '% Fluctuation'
+measure_pretty$drift <- 'Drift'
+measure_pretty$driftfit <- 'Drift (Fit)'
+measure_pretty$rdc <- 'RDC'
+
+these_measures <- c('drift','driftfit','percentFluc','rdc','SFNR','SNR')
+
+
+oneyeardat <- subset(longreport, scandate_epoch > as.numeric(Sys.Date())-365)
+  oneyeardat$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat)[1], function(x){
+    (oneyeardat$value[x] - mean(oneyeardat$value[oneyeardat$measure == oneyeardat$measure[x]],na.rm = TRUE)) / sd(oneyeardat$value[oneyeardat$measure == oneyeardat$measure[x]],na.rm = TRUE)
+    }))
+
+  
+lastscan_values <- data.frame(
+  measure = these_measures,
+  LastScan = lastscan$value[unlist(lapply(these_measures, function(x){which(lastscan$measure == x)}))])
+  lastscan_values$mean <- unlist(lapply(these_measures, function(x){mean(oneyeardat$value[oneyeardat$measure == x], na.rm = TRUE)}))
+  lastscan_values$sd <- unlist(lapply(these_measures, function(x){sd(oneyeardat$value[oneyeardat$measure == x], na.rm = TRUE)}))
+  lastscan_values$Mean_2SD <- unlist(lapply(1:dim(lastscan_values)[1], function(x){sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean[x],lastscan_values$mean[x]-2*lastscan_values$sd[x], lastscan_values$mean[x]+2*lastscan_values$sd[x])}))
+  
+row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
+```
+
+
+# fBIRN
+## Last Scan (`r lastscandate_str`)
+QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolor`>`r passtext``</span>
+```{r echo = FALSE}
+knitr::kable(lastscan_values[,c('LastScan','Mean_2SD')])#, format = 'html', table.attr = "style = 'width:80%;'")
+```
+## 60 day view  
+Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan. Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
+
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures.png'))
+```
+
+
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures.png'))
+```
+ 
+## Since 2017
+QA metrics since Jan 1, 2017. The light blue line represents 60-day smoothing of QA metrics. Blue shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are inidivdual QA scans. Red dots were outside +/- 2SDs.
+
+### Drift
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60.png'))
+```
+
+### Drift (Fit)
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60.png'))
+```
+
+### Percent Fluctuation
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60.png'))
+```
+
+### RDC
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60.png'))
+```
+
+### SFNR
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60.png'))
+```
+
+### SNR
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60.png'))
+```
+

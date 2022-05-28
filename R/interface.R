@@ -43,11 +43,33 @@ hbicqa <- function(datelist='lookup',
   }
 }
 
+makereport <- function(system = 'synapse', report = 'import', longreport = 'calc'){
+
+  if (system == 'synapse')
+  {
+    output_dir <- '~/R-Drive/Bartolotti_J/QA'
+    if(report == 'import'){ report <- '~/R-Drive/Bartolotti_J/QA/QA_Report.csv'}
+    figdir <- '~/R-Drive/Bartolotti_J/QA/figures'
+  } else if(system == 'Windows'){
+    output_dir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA/'
+    if(report == 'import'){report <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA/QA_Report.csv'}
+    figdir <- 'C:\\Users\\j186b025\\Documents\\local_qa\\figures'
+  }
+  if(longreport == 'calc'){longreport <- getTolerances(report)}
+    rmarkdown::render('R/report.Rmd',
+      output_dir = output_dir,
+      output_file = 'Report.html',
+      params = list(
+        longreport = longreport,
+        figdir = figdir
+      )
+)
+}
 
 #' @export
 fBIRN_Report <- function(scan_names = 'all',
                          measures = 'all',
-                         scans_after_epoch = 'all',
+                         scans_after_epoch = 'all', #after 11/22/16 to start after a big outlier
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',
                          reportdir = '~/R-Drive/Bartolotti_J/QA',
@@ -66,8 +88,9 @@ fBIRN_Report <- function(scan_names = 'all',
 }
 
 #' @export
-fBIRN_Figures <- function(report){
+fBIRN_Figures <- function(report, reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
+  dir.create(file.path(reportdir,figdir),showWarnings = FALSE)
   longreport <- getTolerances(report)
-  makeFigures(longreport)
+  makeFigures(longreport, file.path(reportdir,figdir), dosave)
 
 }
