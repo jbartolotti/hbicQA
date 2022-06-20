@@ -27,7 +27,12 @@ hbicqa <- function(datelist='lookup',
 
     #fBIRN BOLD data processing
     fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
-    if(!is.na(fBIRN_temp_dir)){fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')} else {fBIRN_scan4_temp_input <- NA}
+    if(!is.na(fBIRN_temp_dir)){
+      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
+      dir.create(fBIRN_scan4_temp_input,recursive = TRUE, showWarnings = FALSE)
+    } else {
+        fBIRN_scan4_temp_input <- NA
+        }
     fBIRN_scan4_output <- file.path(basedir,analysisdir,sprintf('QC_%s',datestr))
     runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, fBIRN_scan4_temp_input)
     message(runfBIRN_notes$message)
