@@ -6,7 +6,7 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
   if(!is.na(tempdir)){
     system2('cp', args = c(
       '-r ',
-      indir4,
+      file.path(indir4,'*'),
       tempdir
       ), wait = TRUE
       )
