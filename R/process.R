@@ -29,14 +29,14 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
       outdir4
     ), wait = TRUE
     )
-  #  if(!is.na(tempdir)){
-  #    system2('rm', args = c(
-  #      '-r ',
-  #      tempdir
-  #    ), wait = TRUE
-  #    )
-  #    mymessage <- c(mymessage,sprintf('Removing temporary files in %s',tempdir))
-  #  }
+    if(!is.na(tempdir)){
+      system2('rm', args = c(
+        '-r ',
+        tempdir
+      ), wait = TRUE
+      )
+      mymessage <- c(mymessage,sprintf('Removing temporary files in %s',tempdir))
+    }
 
   }
   if(file.exists(outdir4) && length(dir(outdir4, all.files=TRUE,no.. = TRUE)) > 0){
