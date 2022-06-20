@@ -5,10 +5,12 @@ hbicqa <- function(datelist='lookup',
                    analysisdir = 'Analysis',
                    rawdir = '/xnatdata/arch/9999/arc001',
                    reportdir = '~/R-Drive/Bartolotti_J/QA',
+                   fBIRN_temp_dir = '~/fBIRN_temp',
                    doreports = FALSE,
                    dofigures = FALSE){
   #checks for availability of system functions, i.e. afni and bxh_xcede
   syspath <- checkPath(basedir,rawdir,reportdir)
+  if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
 
 # if (datelist == 'lookup'){datelist <- findNewScans(rawdir, file.path(basedir,imagedir))}
   for(date in datelist){
@@ -22,7 +24,7 @@ hbicqa <- function(datelist='lookup',
     #fBIRN BOLD data processing
     fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
     fBIRN_scan4_output <- file.path(basedir,analysisdir,sprintf('QC_%s',datestr))
-    runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output)
+    runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, fBIRN_temp_dir)
     message(runfBIRN_notes$message)
 
     #ASL processing script goes here

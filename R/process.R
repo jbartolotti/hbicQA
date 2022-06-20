@@ -1,7 +1,18 @@
-runfBIRN <- function(date, indir4, outdir4){
+runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
+  notes <- list()
+  mymessage <- as.character()
   datestr <-  sprintf('%06d',date)
   already_processed <- FALSE
-
+  if(!is.na(tempdir)){
+    system2('cp', args = c(
+      '-r ',
+      indir4,
+      tempdir
+      ), wait = TRUE
+      )
+    mymessage <- c(mymessage,sprintf('Temporary directory %s created.\nContents of %s copied to %s.',tempdir,indir4,tempdir))
+    datadir <- tempdir
+    } else {datadir <- indir4}
   if(file.exists(outdir4) && length(dir(outdir4, all.files=TRUE,no.. = TRUE)) > 0)
   {
     already_processed <- TRUE
@@ -9,19 +20,25 @@ runfBIRN <- function(date, indir4, outdir4){
   } else {
     system2('dicom2bxh', args = c(
       '--xcede',
-      file.path(indir4,'*.dcm'),
-      file.path(indir4,sprintf('QC_%s_WRAPPED.xml',datestr))
+      file.path(datadir,'*.dcm'),
+      file.path(datadir,sprintf('QC_%s_WRAPPED.xml',datestr))
     ), wait= TRUE
     )
     system2('fmriqa_phantomqa.pl', args = c(
-      file.path(indir4, sprintf('QC_%s_WRAPPED.xml',datestr)),
+      file.path(datadir, sprintf('QC_%s_WRAPPED.xml',datestr)),
       outdir4
     ), wait = TRUE
     )
+    if(!is.na(tempdir)){
+      system2('rm', args = c(
+        '-r ',
+        tempdir
+      ), wait = TRUE
+      )
+      mymessage <- c(mymessage,sprintf('Removing temporary files in %s',tempdir))
+    }
 
   }
-  notes <- list()
-  mymessage <- as.character()
   if(file.exists(outdir4) && length(dir(outdir4, all.files=TRUE,no.. = TRUE)) > 0){
 
     mymessage <- sprintf('fBIRN complete. Proceeding with file %s\n',outdir4)
