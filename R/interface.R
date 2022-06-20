@@ -11,8 +11,12 @@ hbicqa <- function(datelist='lookup',
   #checks for availability of system functions, i.e. afni and bxh_xcede
   syspath <- checkPath(basedir,rawdir,reportdir)
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
-
-# if (datelist == 'lookup'){datelist <- findNewScans(rawdir, file.path(basedir,imagedir))}
+  if (datelist == 'lookup'){
+#     datelist <- findNewScans(rawdir, file.path(basedir,imagedir))
+     error("lookup function not implemented yet.")
+  } else if(typeof(datelist)=='character'){
+     error("datelist must be either 'lookup' or a number/vector with format MMDDYY")
+  }
   for(date in datelist){
     datestr <-  sprintf('%06d',date)
     #move new raw qa scans to storage location
