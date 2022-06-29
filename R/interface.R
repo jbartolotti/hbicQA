@@ -26,15 +26,13 @@ hbicqa <- function(datelist='lookup',
     #visual inspection function goes here
 
     #fBIRN BOLD data processing
-    fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
+    fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4')
     if(!is.na(fBIRN_temp_dir)){
-      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
+#      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
       dir.create(fBIRN_scan4_temp_input,recursive = TRUE, showWarnings = FALSE)
-    } else {
-        fBIRN_scan4_temp_input <- NA
-        }
+    }
     fBIRN_scan4_output <- file.path(basedir,analysisdir,sprintf('QC_%s',datestr))
-    runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, fBIRN_scan4_temp_input)
+    runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, fBIRN_temp_dir)
     message(runfBIRN_notes$message)
 
     #ASL processing script goes here
@@ -42,6 +40,7 @@ hbicqa <- function(datelist='lookup',
     #Monthly ADNI Gradient Nonlinearity goes here
   }
   message(sprintf('fBIRN done for: %s',paste(datelist,collapse = ' ')))
+
 
   qa_measures <- NA
   if (doreports){
@@ -81,7 +80,7 @@ makereport <- function(system = 'synapse', report = 'import', longreport = 'calc
 #' @export
 fBIRN_Report <- function(scan_names = 'all',
                          measures = 'all',
-                         scans_after_epoch = 'all', #after 11/22/16 to start after a big outlier
+                         scans_after_epoch = 'all', #after 11/22/16 to start after a big outlier #1483228800 = 1/1/2017
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',
                          reportdir = '~/R-Drive/Bartolotti_J/QA',

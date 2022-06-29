@@ -2,14 +2,27 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
   notes <- list()
   mymessage <- as.character()
   datestr <-  sprintf('%06d',date)
+  pwd <- getwd()
   already_processed <- FALSE
   if(!is.na(tempdir)){
-    system2('cp', args = c(
-      '-r ',
-      file.path(indir4,'*'),
-      tempdir
+    setwd(indir4)
+    system2('tar', args = c(
+      '-zcf',
+      'DICOM.tar.gz',
+      'DICOM'
       ), wait = TRUE
       )
+    system2('mv', args = c(
+      'DICOM.tar.gz',
+      file.path(tempdir,'DICOM.tar.gz')
+    ), wait = TRUE
+    )
+    system2('gunzip', args = c(
+      file.path(tempdir,'DICOM.tar.gz')
+    ), wait = TRUE
+    )
+
+
     mymessage <- c(mymessage,sprintf('Temporary directory %s created.\nContents of %s copied to %s.',tempdir,indir4,tempdir))
     datadir <- tempdir
     } else {datadir <- indir4}
