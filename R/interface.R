@@ -26,7 +26,7 @@ hbicqa <- function(datelist='lookup',
     #visual inspection function goes here
 
     #fBIRN BOLD data processing
-    fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4')
+    fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
     if(!is.na(fBIRN_temp_dir)){
 #      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
       dir.create(fBIRN_scan4_temp_input,recursive = TRUE, showWarnings = FALSE)
@@ -54,6 +54,8 @@ hbicqa <- function(datelist='lookup',
   }
 }
 
+
+#https://ardata-fr.github.io/flextable-book/
 makereport <- function(system = 'synapse', report = 'import', longreport = 'calc'){
 
   if (system == 'synapse')
