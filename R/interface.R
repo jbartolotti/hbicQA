@@ -14,7 +14,6 @@ hbicqa <- function(datelist='lookup',
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
   if (datelist == 'lookup'){
      datelist <- findNewScans(rawdir, file.path(basedir,imagedir))
-     error("lookup function not implemented yet.")
   } else if(typeof(datelist)=='character'){
      error("datelist must be either 'lookup' or a number/vector with format MMDDYY")
   }
