@@ -1,13 +1,23 @@
 
 findNewScans <- function(rawdir, targetdir){
   arcscan <- dir(rawdir)
-  arcscan <- arcscan[grep('qc',arcscan)]
-  imscan <- imscan[grep('zip',imscan,invert =TRUE)]
-  imscan <- imscan[grep('qc',imscan)]
+  arcscan <- arcscan[grepl('(qc_[0-9]{6}$)',arcscan)] #capture qc_, six digits, and end of string ($)
+  imscan <- dir(targetdir)
+  imscan <- imscan[grepl('(qc_[0-9]{6}$)',imscan)] #capture qc_, six digits,
 
   uncopied <- arcscan[!(arcscan %in% imscan)]
 
+  oneyear <- as.numeric(Sys.Date())-365
 
+  uncopied_days <- unlist(lapply(uncopied,
+                    function(x){
+                      as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
+                    }))
+  uncopied_oneyear <- uncopied[uncopied_days > oneyear]
+
+  uncopied_oneyear_dateonly <- gsub('qc_','',uncopied_oneyear)
+
+  return(as.numeric(uncopied_oneyear_dateonly))
   }
 
 

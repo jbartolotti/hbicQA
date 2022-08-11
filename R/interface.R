@@ -5,14 +5,15 @@ hbicqa <- function(datelist='lookup',
                    analysisdir = 'Analysis',
                    rawdir = '/xnatdata/arch/9999/arc001',
                    reportdir = '~/R-Drive/Bartolotti_J/QA',
-                   fBIRN_temp_dir = '~/fBIRN_temp',
+                   fBIRN_temp_dir = NA,
                    doreports = FALSE,
-                   dofigures = FALSE){
+                   dofigures = FALSE,
+                   dohtmlreport = FALSE){
   #checks for availability of system functions, i.e. afni and bxh_xcede
   syspath <- checkPath(basedir,rawdir,reportdir)
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
   if (datelist == 'lookup'){
-#     datelist <- findNewScans(rawdir, file.path(basedir,imagedir))
+     datelist <- findNewScans(rawdir, file.path(basedir,imagedir))
      error("lookup function not implemented yet.")
   } else if(typeof(datelist)=='character'){
      error("datelist must be either 'lookup' or a number/vector with format MMDDYY")
@@ -52,6 +53,9 @@ hbicqa <- function(datelist='lookup',
     if (!is.na(qa_measures)){myreport <- qa_measures} else{myreport <- file.path(reportdir,'QA_Report.csv')}
     fBIRN_Figures(report = myreport)
   }
+  if(dohtmlreport){
+    makereport()
+  }
 }
 
 
@@ -82,7 +86,7 @@ makereport <- function(system = 'synapse', report = 'import', longreport = 'calc
 #' @export
 fBIRN_Report <- function(scan_names = 'all',
                          measures = 'all',
-                         scans_after_epoch = 'all', #after 11/22/16 to start after a big outlier #1483228800 = 1/1/2017
+                         scans_after_epoch = 17167, #after 11/22/16 to start after a big outlier #17167 = 1/1/2017 (epoch in days)
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',
                          reportdir = '~/R-Drive/Bartolotti_J/QA',
