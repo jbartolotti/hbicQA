@@ -85,7 +85,7 @@ fBIRN_html_Report <- function(system = 'synapse', report = 'import', longreport 
   if(longreport == 'calc'){longreport <- getTolerances(report)}
     rmarkdown::render(system.file('extdata','report.Rmd', package = 'hbicQA'),
       output_dir = output_dir,
-      output_file = 'Report.html',
+      output_file = sprintf('3T_QA_Report_%s.html',format(Sys.Date(), format = '%Y_%m_%d')),
       params = list(
         longreport = longreport,
         figdir = path.expand(figdir)

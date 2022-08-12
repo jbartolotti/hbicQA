@@ -67,7 +67,7 @@ makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 
     ggplot2::geom_point(color = 'black', size = 1) +
     ggplot2::geom_line(color = 'black', size = 1) +
     ggplot2::geom_point(data = oneyeardat_mostrecent,
-               color = 'red', fill = 'black', size = 2, shape = 21, stroke = 1 ) +
+               color = 'black', fill = 'black', size = 2, shape = 21, stroke = 1 ) +
     ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
     ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
     ggplot2::facet_wrap(.~measure, ncol = numcol) +
