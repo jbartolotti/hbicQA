@@ -42,119 +42,119 @@ makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 
     }))
   oneyeardat_mostrecent <- oneyeardat[oneyeardat$scandate_epoch == max(oneyeardat$scandate_epoch, na.rm = TRUE),]
   #zscore dotplot 60 days, 1&2sd calced on 365 to present
-  ggplot(subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60), aes(x = measure, y = z_value_smooth60, alpha = scandate_epoch)) +
-  theme_bw() +
-    scale_x_discrete() +
-    annotate('rect',xmin = 0, xmax = num_measures+1, ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
-    annotate('rect',xmin = 0, xmax = num_measures+1, ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
-    geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
+  ggplot2::ggplot(subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60), ggplot2::aes(x = measure, y = z_value_smooth60, alpha = scandate_epoch)) +
+    ggplot2::theme_bw() +
+    ggplot2::scale_x_discrete() +
+    ggplot2::annotate('rect',xmin = 0, xmax = num_measures+1, ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
+    ggplot2::annotate('rect',xmin = 0, xmax = num_measures+1, ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
+    ggbeeswarm::geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
                      width = .2, size = 2) +
-    geom_point(data = subset(oneyeardat_mostrecent, z_value_smooth60 <=2 & z_value_smooth60 >=-2 ),
+    ggplot2::geom_point(data = subset(oneyeardat_mostrecent, z_value_smooth60 <=2 & z_value_smooth60 >=-2 ),
                color = dot_outline_green, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
-    geom_point(data = subset(oneyeardat_mostrecent, z_value_smooth60 >2 | z_value_smooth60 < -2),
+    ggplot2::geom_point(data = subset(oneyeardat_mostrecent, z_value_smooth60 >2 | z_value_smooth60 < -2),
                color = dot_outline_red, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
 
-    scale_alpha_continuous(range = c(.2,1), guide = 'none') +
-    labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
-    theme(axis.text.x = element_text(angle = 90, size = 14, vjust = .5))
-  if(dosave){ggsave(file.path(figdir,sprintf('60day_dotplot_sd365%s.png',suffix)),width = min(6,round(num_measures*2/3)), height = 5, dpi = 200)}
+    ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
+    ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, size = 14, vjust = .5))
+  if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('60day_dotplot_sd365%s.png',suffix)),width = min(6,round(num_measures*2/3)), height = 5, dpi = 200)}
 
   #zscore facet lineplot 60 days, 1&2sd calced on 365 to present
-  ggplot(subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60), aes(x = scandate_epoch, y = z_value_smooth60, alpha = scandate_epoch)) +
-    theme_bw() +
-    annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
-    annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
-    geom_point(color = 'black', size = 1) +
-    geom_line(color = 'black', size = 1) +
-    geom_point(data = oneyeardat_mostrecent,
+  ggplot2::ggplot(subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60), ggplot2::aes(x = scandate_epoch, y = z_value_smooth60, alpha = scandate_epoch)) +
+    ggplot2::theme_bw() +
+    ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
+    ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
+    ggplot2::geom_point(color = 'black', size = 1) +
+    ggplot2::geom_line(color = 'black', size = 1) +
+    ggplot2::geom_point(data = oneyeardat_mostrecent,
                color = 'red', fill = 'black', size = 2, shape = 21, stroke = 1 ) +
-    scale_alpha_continuous(range = c(.2,1), guide = 'none') +
-    labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
-    facet_wrap(.~measure, ncol = numcol) +
-    scale_x_continuous(breaks = oneyeardat$scandate_epoch[oneyeardat$scandate_epoch > as.numeric(Sys.Date()-60)],
+    ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
+    ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
+    ggplot2::facet_wrap(.~measure, ncol = numcol) +
+    ggplot2::scale_x_continuous(breaks = oneyeardat$scandate_epoch[oneyeardat$scandate_epoch > as.numeric(Sys.Date()-60)],
                        labels = format(as.Date(oneyeardat$scandate_epoch[oneyeardat$scandate_epoch > as.numeric(Sys.Date()-60)], origin = '1970-01-01'), format = '%m-%d')) +
-        theme(axis.text.x = element_text(angle = 90, size = 12, vjust = .5))
-  if(dosave){ ggsave(file.path(figdir,sprintf('60day_lineplot_sd365%s.png',suffix)),width = numcol*2, height = numrow*2+1, dpi = 200)}
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, size = 12, vjust = .5))
+  if(dosave){ ggplot2::ggsave(file.path(figdir,sprintf('60day_lineplot_sd365%s.png',suffix)),width = numcol*2, height = numrow*2+1, dpi = 200)}
 
   for(thismeasure in current_measures){
   #1&2 SD, 60 day smooth, individual figures, post first jandate
     measuredat <- subset(longreport, measure == thismeasure & scandate_epoch > as.numeric(as.Date(jandates[1],format = '%m%d%y')))
-  ggplot(measuredat, aes(x = scandate_epoch, y = value)) +
-      theme_bw() +
-      geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
-      geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
-      scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-      labs(x = '',title = 'Blue: 60day smooth. Shaded = +/- 1&2 SD') +
-      geom_point() +
-      geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
+    ggplot2::ggplot(measuredat, ggplot2::aes(x = scandate_epoch, y = value)) +
+      ggplot2::theme_bw() +
+      ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
+      ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
+      ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
+      ggplot2::labs(x = '',title = 'Blue: 60day smooth. Shaded = +/- 1&2 SD') +
+      ggplot2::geom_point() +
+      ggplot2::geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
                   fill = shadeblue, alpha = .25) +
-      geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
+      ggplot2::geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
                   fill = shadeblue, alpha = .5) +
-      geom_line(aes(y = value_smooth60),color = lineblue) +
-      geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
-      theme(axis.text.x = element_text(angle = 30))
+      ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = lineblue) +
+      ggplot2::geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
 
-    if(dosave){ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60.png',thismeasure)),width = 6, height = 4, dpi = 200)}
+    if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60.png',thismeasure)),width = 6, height = 4, dpi = 200)}
 
   }
 
 
   #1SD, 60&365
-  ggplot(longreport, aes(x = scandate_epoch, y = value)) +
-  theme_bw() +
-  geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
-  geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
-  scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-  labs(x = '',title = 'Green: 1yr smooth. Blue: 60day smooth. Shaded = +/-1SD') +
-  geom_point() +
-  geom_ribbon(aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
+  ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
+    ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
+    ggplot2::labs(x = '',title = 'Green: 1yr smooth. Blue: 60day smooth. Shaded = +/-1SD') +
+    ggplot2::geom_point() +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
               fill = shadegreen, alpha = .5) +
-  geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
               fill = shadeblue, alpha = .5) +
-  geom_line(aes(y = value_smooth365),color = linegreen) +
-  geom_line(aes(y = value_smooth60),color = lineblue) +
-  facet_wrap(.~measure,scales = 'free') +
-  theme(axis.text.x = element_text(angle = 30))
-  if(dosave){ggsave(file.path(figdir,sprintf('measures_1-365_1-60%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth365),color = linegreen) +
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = lineblue) +
+    ggplot2::facet_wrap(.~measure,scales = 'free') +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
+  if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measures_1-365_1-60%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
 
 
 #1&2 SD, 60
-  ggplot(longreport, aes(x = scandate_epoch, y = value)) +
-    theme_bw() +
-    geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
-    geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
-    scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-    labs(x = '',title = 'Blue: 60day smooth. Shaded = +/- 1&2 SD') +
-    geom_point() +
-    geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
+  ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
+    ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
+    ggplot2::labs(x = '',title = 'Blue: 60day smooth. Shaded = +/- 1&2 SD') +
+    ggplot2::geom_point() +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
                 fill = shadeblue, alpha = .25) +
-    geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
                 fill = shadeblue, alpha = .5) +
-    geom_line(aes(y = value_smooth60),color = lineblue) +
-    geom_point(data = subset(longreport, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
-    facet_wrap(.~measure,scales = 'free')+
-    theme(axis.text.x = element_text(angle = 30))
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = lineblue) +
+    ggplot2::geom_point(data = subset(longreport, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
+    ggplot2::facet_wrap(.~measure,scales = 'free')+
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
 
-  if(dosave){ggsave(file.path(figdir,sprintf('measures_1-60_2-60%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
+  if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measures_1-60_2-60%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
 
   #1&2 SD, 365
-  ggplot(longreport, aes(x = scandate_epoch, y = value)) +
-    theme_bw() +
-    geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
-    geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
-    scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-    labs(x = '',title = 'Green: 1yr smooth. Shaded = +/- 1&2 SD') +
-    geom_point() +
-    geom_ribbon(aes(y = value_smooth365, ymin = value_smooth365-2*value_smooth_sd365, ymax = value_smooth365+2*value_smooth_sd365),
+  ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
+    ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
+    ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
+    ggplot2::labs(x = '',title = 'Green: 1yr smooth. Shaded = +/- 1&2 SD') +
+    ggplot2::geom_point() +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-2*value_smooth_sd365, ymax = value_smooth365+2*value_smooth_sd365),
                 fill = shadegreen, alpha = .25) +
-    geom_ribbon(aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
                 fill = shadegreen, alpha = .5) +
-    geom_line(aes(y = value_smooth365),color = linegreen) +
-    geom_point(data = subset(longreport, value < value_smooth365-2*value_smooth_sd365 | value > value_smooth365+2*value_smooth_sd365), color = 'red') +
-    facet_wrap(.~measure,scales = 'free')+
-    theme(axis.text.x = element_text(angle = 30))
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth365),color = linegreen) +
+    ggplot2::geom_point(data = subset(longreport, value < value_smooth365-2*value_smooth_sd365 | value > value_smooth365+2*value_smooth_sd365), color = 'red') +
+    ggplot2::facet_wrap(.~measure,scales = 'free')+
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
 
-  if(dosave){ggsave(file.path(figdir,sprintf('measures_1-365_2-365%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
+  if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measures_1-365_2-365%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
 
 
 

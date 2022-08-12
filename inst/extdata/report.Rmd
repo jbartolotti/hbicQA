@@ -76,7 +76,7 @@ lastscan_values$measure_spaced <- unlist(lapply(row.names(lastscan_values), func
 
 lastscan_values$toprint <- paste(lastscan_values$measure_spaced,lastscan_values$LastScan_spaced, lastscan_values$Mean_2SD,sep = '')
 measure_head <- 'Measure'
-lastscan_head <- 'LastScan'
+lastscan_head <- 'Value'
 msd_head <- 'Mean [2SD]'
 header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)),
                   lastscan_head, rep('&nbsp;',(maxnumchar+4)-nchar(lastscan_head)),
@@ -92,9 +92,9 @@ QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolo
 `r sprintf('<b>%s</b>',header)`
 
 `r paste(lastscan_values$toprint, collapse = '<br>')`
-#```{r echo = FALSE}
+```{r echo = FALSE}
 #knitr::kable(lastscan_values[,c('LastScan_Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
-#```
+```
 </tt>
 
 
