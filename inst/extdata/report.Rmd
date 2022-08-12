@@ -66,6 +66,8 @@ lastscan_values <- data.frame(
   lastscan_values$Mean_2SD <- unlist(lapply(1:dim(lastscan_values)[1], function(x){sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean[x],lastscan_values$mean[x]-2*lastscan_values$sd[x], lastscan_values$mean[x]+2*lastscan_values$sd[x])}))
   
 row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
+lastscan_values$LastScan_Mean_2SD <- paste(lastscan_values$LastScan, lastscan_values$Mean_2SD,sep = '        ')
+
 ```
 
 
@@ -73,7 +75,7 @@ row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
 ## Last Scan (`r lastscandate_str`)
 QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolor`>`r passtext``</span>
 ```{r echo = FALSE}
-knitr::kable(lastscan_values[,c('LastScan','Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
+knitr::kable(lastscan_values[,c('LastScan_Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
 ```
 ## 60 day view  
 Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan. Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
