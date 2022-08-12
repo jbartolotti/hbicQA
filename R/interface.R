@@ -88,7 +88,7 @@ fBIRN_html_Report <- function(system = 'synapse', report = 'import', longreport 
       output_file = 'Report.html',
       params = list(
         longreport = longreport,
-        figdir = figdir
+        figdir = path.expand(figdir)
       )
 )
 }
