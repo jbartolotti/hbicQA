@@ -86,9 +86,9 @@ makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 
       ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
       ggplot2::labs(x = '',title = 'Blue: 60day smooth. Shaded = +/- 1&2 SD') +
       ggplot2::geom_point() +
-      ggplot2::geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
+      ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
                   fill = shadeblue, alpha = .25) +
-      ggplot2::geom_ribbon(aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
+      ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
                   fill = shadeblue, alpha = .5) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = lineblue) +
       ggplot2::geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
