@@ -88,11 +88,13 @@ header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)
 ## Last Scan (`r lastscandate_str`)
 QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolor`>`r passtext``</span>
 <tt>
-`r header`
-`r lastscan_values$toprint`
-```{r echo = FALSE}
+
+`r sprintf('<b>%s</b>',header)`
+
+`r paste(lastscan_values$toprint, collapse = '<br>')`
+#```{r echo = FALSE}
 #knitr::kable(lastscan_values[,c('LastScan_Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
-```
+#```
 </tt>
 
 
