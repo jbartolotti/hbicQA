@@ -83,7 +83,7 @@ fBIRN_html_Report <- function(system = 'synapse', report = 'import', longreport 
     figdir <- 'C:\\Users\\j186b025\\Documents\\local_qa\\figures'
   }
   if(longreport == 'calc'){longreport <- getTolerances(report)}
-    rmarkdown::render('R/report.Rmd',
+    rmarkdown::render(system.file('extdata','report.Rmd', package = 'hbicQA'),
       output_dir = output_dir,
       output_file = 'Report.html',
       params = list(
