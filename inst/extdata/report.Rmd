@@ -70,8 +70,17 @@ maxnumchar <- max(numchar)
 lastscan_values$LastScan_spaced <- unlist(lapply(lastscan_values$LastScan, function(x){paste(c(x,rep('&nbsp;',(maxnumchar+4)-nchar(x))),collapse='')}))
 
 row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
-lastscan_values$LastScan_Mean_2SD <- paste(lastscan_values$LastScan_spaced, lastscan_values$Mean_2SD,sep = '')
+rnumchar <- nchar(row.names(lastscan_values))
+maxrnumchar <- max(rnumchar)
+lastscan_values$measure_spaced <- unlist(lapply(row.names(lastscan_values), function(x){paste(c(x,rep('&nbsp;',(maxrnumchar+4)-nchar(x))),collapse='')}))
 
+lastscan_values$toprint <- paste(lastscan_values$measure_spaced,lastscan_values$LastScan_spaced, lastscan_values$Mean_2SD,sep = '')
+measure_head <- 'Measure'
+lastscan_head <- 'LastScan'
+msd_head <- 'Mean [2SD]'
+header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)),
+                  lastscan_head, rep('&nbsp;',(maxnumchar+4)-nchar(lastscan_head)),
+                  msd_head),collapse = '')
 ```
 
 
@@ -79,8 +88,10 @@ lastscan_values$LastScan_Mean_2SD <- paste(lastscan_values$LastScan_spaced, last
 ## Last Scan (`r lastscandate_str`)
 QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolor`>`r passtext``</span>
 <tt>
+`r header`
+`r lastscan_values$toprint`
 ```{r echo = FALSE}
-knitr::kable(lastscan_values[,c('LastScan_Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
+#knitr::kable(lastscan_values[,c('LastScan_Mean_2SD')], format = 'html', table.attr = "style = 'width:80%;'")
 ```
 </tt>
 
