@@ -2,4 +2,5 @@
 
 export(fBIRN_Figures)
 export(fBIRN_Report)
+export(fBIRN_html_Report)
 export(hbicqa)

@@ -67,9 +67,9 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
 windir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA'
 getTolerances <- function(report){
   if(class(report) == 'character'){
-    reportdat <- read.csv(report)
+    report <- read.csv(report)
   }
-  longreport <- reshape2::melt(data.table::setDT(reportdat),
+  longreport <- reshape2::melt(data.table::setDT(report),
                      id.vars = c('folder','scandate','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
                      variable.name = "measure")
   longreport <- as.data.frame(longreport)

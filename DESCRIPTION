@@ -1,6 +1,6 @@
 Package: hbicQA
 Title: Run fMRI QA for HBIC Scanners
-Version: 0.0.1.1
+Version: 0.0.1.2
 Authors@R: 
     person("James", "Bartolotti", , "jbartolotti2@kumc.edu", role = c("aut", "cre"),
            comment = c())

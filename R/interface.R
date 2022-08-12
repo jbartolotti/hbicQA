@@ -8,7 +8,8 @@ hbicqa <- function(datelist='lookup',
                    fBIRN_temp_dir = NA,
                    doreports = FALSE,
                    dofigures = FALSE,
-                   dohtmlreport = FALSE){
+                   dohtmlreport = FALSE,
+                   scans_after_epoch = 'all'){
   #checks for availability of system functions, i.e. afni and bxh_xcede
   syspath <- checkPath(basedir,rawdir,reportdir)
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
@@ -44,7 +45,7 @@ hbicqa <- function(datelist='lookup',
 
   qa_measures <- NA
   if (doreports){
-    qa_measures <- fBIRN_Report(measures = 'all', scan_names = 'all', scans_after_epoch = 'all',
+    qa_measures <- fBIRN_Report(measures = 'all', scan_names = 'all', scans_after_epoch = scans_after_epoch,
                  basedir = basedir, analysisdir = analysisdir, reportdir = reportdir,
                  readfrom = 'QA_Report.csv')
   }
@@ -53,22 +54,32 @@ hbicqa <- function(datelist='lookup',
     fBIRN_Figures(report = myreport)
   }
   if(dohtmlreport){
-    makereport()
+    if (!is.na(qa_measures)){myreport <- qa_measures} else{myreport <- file.path(reportdir,'QA_Report.csv')}
+    fBIRN_html_Report(report = myreport, output_dir = report_dir)
   }
 }
 
 
 #https://ardata-fr.github.io/flextable-book/
-makereport <- function(system = 'synapse', report = 'import', longreport = 'calc'){
+#' @export
+fBIRN_html_Report <- function(system = 'synapse', report = 'import', longreport = 'calc', output_dir = 'auto'){
 
   if (system == 'synapse')
   {
-    output_dir <- '~/R-Drive/Bartolotti_J/QA'
-    if(report == 'import'){ report <- '~/R-Drive/Bartolotti_J/QA/QA_Report.csv'}
-    figdir <- '~/R-Drive/Bartolotti_J/QA/figures'
+    if(output_dir == 'auto'){
+      output_dir <- '~/R-Drive/Bartolotti_J/QA'
+    }
+    if(report == 'import'){
+      report <- file.path(output_dir,'QA_Report.csv')
+    }
+    figdir <- file.path(output_dir,'figures')
   } else if(system == 'Windows'){
-    output_dir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA/'
-    if(report == 'import'){report <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA/QA_Report.csv'}
+    if(output_dir == 'auto'){
+      output_dir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA/'
+    }
+    if(report == 'import'){
+      report <- file.path(output_dir,'QA_Report.csv')
+    }
     figdir <- 'C:\\Users\\j186b025\\Documents\\local_qa\\figures'
   }
   if(longreport == 'calc'){longreport <- getTolerances(report)}
@@ -85,7 +96,7 @@ makereport <- function(system = 'synapse', report = 'import', longreport = 'calc
 #' @export
 fBIRN_Report <- function(scan_names = 'all',
                          measures = 'all',
-                         scans_after_epoch = 17167, #after 11/22/16 to start after a big outlier #17167 = 1/1/2017 (epoch in days)
+                         scans_after_epoch = 'all', #after 11/22/16 to start after a big outlier #17167 = 1/1/2017 (epoch in days)
                          basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                          analysisdir = 'Analysis',
                          reportdir = '~/R-Drive/Bartolotti_J/QA',
