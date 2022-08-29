@@ -55,7 +55,7 @@ hbicqa <- function(datelist='lookup',
   }
   if(dohtmlreport){
     if (!is.na(qa_measures)){myreport <- qa_measures} else{myreport <- file.path(reportdir,'QA_Report.csv')}
-    fBIRN_html_Report(report = myreport, output_dir = report_dir)
+    fBIRN_html_Report(report = myreport, output_dir = reportdir)
   }
 }
 

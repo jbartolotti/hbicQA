@@ -27,11 +27,14 @@ text_red <- '#E12A1B'
 longreport <- params$longreport
 figdir <- params$figdir
 
+these_measures <- c('drift','driftfit','percentFluc','rdc','SFNR','SNR')
 
 lastscan <- longreport[longreport$scandate_epoch == max(longreport$scandate_epoch,na.rm = TRUE),]
 lastscan <- lastscan[!is.na(lastscan$scandate_epoch),]
 lastscandate_str <- format(as.Date(unique(lastscan$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
-allpass <- all(lastscan$z_value_smooth60 <=2 & lastscan$z_value_smooth60 >= -2) 
+
+lastscan_checkpass <- lastscan[lastscan$measure %in% these_measures,]
+allpass <- all(lastscan_checkpass$value_smooth_sd60 <=2 & lastscan_checkpass$value_smooth_sd60 >= -2) 
 if(allpass){
   passcolor = text_green
   passtext = 'All metrics in acceptable range.'
@@ -49,7 +52,6 @@ measure_pretty$drift <- 'Drift'
 measure_pretty$driftfit <- 'Drift (Fit)'
 measure_pretty$rdc <- 'RDC'
 
-these_measures <- c('drift','driftfit','percentFluc','rdc','SFNR','SNR')
 
 
 oneyeardat <- subset(longreport, scandate_epoch > as.numeric(Sys.Date())-365)
