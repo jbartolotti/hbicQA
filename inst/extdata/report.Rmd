@@ -115,12 +115,7 @@ knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures.png'
 ## Since 2017
 QA metrics since Jan 1, 2017. The light blue line represents 60-day smoothing of QA metrics. Blue shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are inidivdual QA scans. Red dots were outside +/- 2SDs.
 
-#<details>
-#  <summary>Click for Answer</summary>
-#    ```{r, echo=FALSE, eval=TRUE}
-#    hist(1:10)
-#    ```
-#</details> 
+
 
 ### Drift
 ```{r echo = FALSE}
