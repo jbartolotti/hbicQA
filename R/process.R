@@ -65,13 +65,13 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
 }
 
 windir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA'
-getTolerances <- function(report){
+getTolerances <- function(report, dofigures = FALSE, remove_duplicate_rows = TRUE){
   if(class(report) == 'character'){
     report <- read.csv(report)
   }
   longreport <- reshape2::melt(data.table::setDT(report),
                      id.vars = c('folder','scandate','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
-                     variable.name = "measure")
+                     variable.name = "measure",)
   longreport <- as.data.frame(longreport)
   dayrange <- 30
   mycol <- sprintf('value_smooth%s',dayrange)
@@ -136,23 +136,28 @@ getTolerances <- function(report){
 
   }
 
+if(remove_duplicate_rows){
+  longreport <- longreport[!duplicated(longreport),]
+}
 
 
-ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point() +
-  ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-2*value_smooth_sd365, ymax = value_smooth365+2*value_smooth_sd365),
-              fill = '#009933', alpha = .2) +
-  ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
-              fill = '#009933', alpha = .5) +
-  ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
-              fill = '#0033cc', alpha = .5) +
-#  geom_ribbon(ggplot2::aes(y = value_smooth30, ymin = value_smooth30-value_smooth_sd30, ymax = value_smooth30+value_smooth_sd30), fill = 'red', alpha = .4) +
-  ggplot2::geom_line(ggplot2::aes(y = value_smooth365),color = '#33ff33') +
-  ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = '#33ccff') +
-#  geom_line(ggplot2::aes(y = value_smooth30),color = 'red') +
+if(dofigures){
+  ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_point() +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-2*value_smooth_sd365, ymax = value_smooth365+2*value_smooth_sd365),
+                fill = '#009933', alpha = .2) +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
+                fill = '#009933', alpha = .5) +
+    ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
+                fill = '#0033cc', alpha = .5) +
+  #  geom_ribbon(ggplot2::aes(y = value_smooth30, ymin = value_smooth30-value_smooth_sd30, ymax = value_smooth30+value_smooth_sd30), fill = 'red', alpha = .4) +
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth365),color = '#33ff33') +
+    ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = '#33ccff') +
+  #  geom_line(ggplot2::aes(y = value_smooth30),color = 'red') +
 
-  ggplot2::facet_wrap(.~measure,scales = 'free')
-ggplot2::ggsave('measures.png',width = 30, height = 20)
+    ggplot2::facet_wrap(.~measure,scales = 'free')
+  ggplot2::ggsave('measures.png',width = 30, height = 20)
+}
 return(longreport)
 }
