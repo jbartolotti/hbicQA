@@ -1,8 +1,13 @@
-runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
+runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
   notes <- list()
   mymessage <- as.character()
   datestr <-  sprintf('%06d',date)
   pwd <- getwd()
+  if(phantom == 'fbirn'){
+    suffix <- '_fbirn'
+  } else {
+    suffix <- ''
+  }
   already_processed <- FALSE
   if(!is.na(tempdir)){
     setwd(indir4)
@@ -34,11 +39,11 @@ runfBIRN <- function(date, indir4, outdir4, tempdir = NA){
     system2('dicom2bxh', args = c(
       '--xcede',
       file.path(datadir,'*.dcm'),
-      file.path(datadir,sprintf('QC_%s_WRAPPED.xml',datestr))
+      file.path(datadir,sprintf('QC_%s%s_WRAPPED.xml',datestr,suffix))
     ), wait= TRUE
     )
     system2('fmriqa_phantomqa.pl', args = c(
-      file.path(datadir, sprintf('QC_%s_WRAPPED.xml',datestr)),
+      file.path(datadir, sprintf('QC_%s%s_WRAPPED.xml',datestr,suffix)),
       outdir4
     ), wait = TRUE
     )

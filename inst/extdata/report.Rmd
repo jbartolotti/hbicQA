@@ -115,9 +115,12 @@ knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures.png'
 ## Since 2017
 QA metrics since Jan 1, 2017. The light blue line represents 60-day smoothing of QA metrics. Blue shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are inidivdual QA scans. Red dots were outside +/- 2SDs.
 
-
+Terms:
+**Signal Image**: averaged image, voxel by voxel, across all timepoints
+**Temporal Fluctuation Noise Image**: First, the time series at each voxel is de-trended with a second order polynomial. The 
 
 ### Drift
+Drift calculation: 100*(max raw signal - min raw signal) / mean signal intensity
 ```{r echo = FALSE}
 knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60.png'))
 ```
@@ -138,6 +141,8 @@ knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60.png'))
 ```
 
 ### SFNR
+Signal-to-Fluctuation-Noise Ratio (SFNR).
+
 ```{r echo = FALSE}
 knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60.png'))
 ```

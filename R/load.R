@@ -1,32 +1,54 @@
 
 findNewScans <- function(rawdir, targetdir){
   arcscan <- dir(rawdir)
-  arcscan <- arcscan[grepl('(qc_[0-9]{6}$)',arcscan)] #capture qc_, six digits, and end of string ($)
-  imscan <- dir(targetdir)
-  imscan <- imscan[grepl('(qc_[0-9]{6}$)',imscan)] #capture qc_, six digits,
+  arcscan_bullet <- arcscan[grepl('(^qc_[0-9]{6}$)',arcscan)] #capture beginning string (^), qc_, six digits, and end of string ($)
+  arcscan_fbirn <- arcscan[grepl('(^qc_[0-9]{6}_fbirn)',tolower(arcscan))] #capture beginning string (^), qc_, six digits, _fbirn, and end of string ($)
 
-  uncopied <- arcscan[!(arcscan %in% imscan)]
+    imscan <- dir(targetdir)
+  imscan_bullet <- imscan[grepl('(^qc_[0-9]{6}$)',imscan)] #capture qc_, six digits, and end of string ($)
+  imscan_fbirn <- imscan[grepl('(^qc_[0-9]{6}_fbirn$)',tolower(imscan))] #capture qc_, six digits, _fbirn, and end of string ($)
+
+  uncopied_bullet <- arcscan_bullet[!(arcscan_bullet %in% imscan_bullet)]
+  uncopied_fbirn <- arcscan_fbirn[!(arcscan_fbirn %in% imscan_fbirn)]
 
   oneyear <- as.numeric(Sys.Date())-365
 
-  uncopied_days <- unlist(lapply(uncopied,
+  uncopied_days_bullet <- unlist(lapply(uncopied_bullet,
                     function(x){
                       as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
                     }))
-  uncopied_oneyear <- uncopied[uncopied_days > oneyear]
+  uncopied_oneyear_bullet <- uncopied_bullet[uncopied_days_bullet > oneyear]
 
-  uncopied_oneyear_dateonly <- gsub('qc_','',uncopied_oneyear)
+  uncopied_oneyear_dateonly_bullet <- gsub('qc_','',uncopied_oneyear_bullet)
 
-  return(as.numeric(uncopied_oneyear_dateonly))
+
+  uncopied_days_fbirn <- unlist(lapply(uncopied_fbirn,
+                                        function(x){
+                                          as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
+                                        }))
+  uncopied_oneyear_fbirn <- uncopied_fbirn[uncopied_days_fbirn > oneyear]
+
+  uncopied_oneyear_dateonly_fbirn <- gsub('qc_','',uncopied_oneyear_fbirn)
+  uncopied_oneyear_dateonly_fbirn <- gsub('_fbirn','',uncopied_oneyear_dateonly_fbirn)
+
+uncopied_list <- list(bullet = as.numeric(uncopied_oneyear_dateonly_bullet),
+     fbirn = as.numeric(uncopied_oneyear_dateonly_fbirn))
+  return(uncopied_list)
   }
 
 
 
 
-move_qc <- function(date, savedir, rawdir, overwrite = FALSE){
+move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
   datestr <- sprintf('%06d',date)
-  rawfile <- file.path(rawdir,sprintf('qc_%s',datestr))
-  savefile <- file.path(savedir,sprintf('qc_%s',datestr))
+  if(phantom == 'fbirn'){
+    suffix <- '_fbirn'
+  } else {
+    suffix <- ''
+  }
+
+  rawfile <- file.path(rawdir,sprintf('qc_%s%s',datestr,suffix))
+  savefile <- file.path(savedir,sprintf('qc_%s%s',datestr,suffix))
 
   do_copy <- TRUE
   copy_succeed <- FALSE

@@ -14,31 +14,41 @@ hbicqa <- function(datelist='lookup',
   syspath <- checkPath(basedir,rawdir,reportdir)
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
   if (datelist == 'lookup'){
-     datelist <- findNewScans(rawdir, file.path(basedir,imagedir))
+     datelist_list <- findNewScans(rawdir, file.path(basedir,imagedir))
   } else if(typeof(datelist)=='character'){
      error("datelist must be either 'lookup' or a number/vector with format MMDDYY")
+  } else{
+    datelist_list <- list(bullet = datelist)
   }
-  for(date in datelist){
-    datestr <-  sprintf('%06d',date)
-    #move new raw qa scans to storage location
-    move_qc_notes <- move_qc(date, file.path(basedir,imagedir), rawdir)
-    message(move_qc_notes$message)
+  for(phantom in names(datelist_list)){
+    for(date in datelist_list[[phantom]]){
+      datestr <-  sprintf('%06d',date)
+      #move new raw qa scans to storage location
+      move_qc_notes <- move_qc(date, file.path(basedir,imagedir), rawdir, phantom)
+      message(move_qc_notes$message)
 
-    #visual inspection function goes here
+      #visual inspection function goes here
 
-    #fBIRN BOLD data processing
-    fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
-    if(!is.na(fBIRN_temp_dir)){
-#      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
-      dir.create(fBIRN_scan4_temp_input,recursive = TRUE, showWarnings = FALSE)
+      #fBIRN BOLD data processing
+      if(phantom == 'fbirn'){
+        suffix <- '_fbirn'
+      } else {
+        suffix <- ''
+      }
+
+      fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s%s',datestr,suffix),'SCANS','4','DICOM')
+      if(!is.na(fBIRN_temp_dir)){
+  #      fBIRN_scan4_temp_input <- file.path(fBIRN_temp_dir,sprintf('qc_%s',datestr),'SCANS','4','DICOM')
+        dir.create(fBIRN_scan4_temp_input,recursive = TRUE, showWarnings = FALSE)
+      }
+      fBIRN_scan4_output <- file.path(basedir,analysisdir,sprintf('QC_%s%s',datestr,suffix))
+      runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, phantom, fBIRN_temp_dir)
+      message(runfBIRN_notes$message)
+
+      #ASL processing script goes here
+
+      #Monthly ADNI Gradient Nonlinearity goes here
     }
-    fBIRN_scan4_output <- file.path(basedir,analysisdir,sprintf('QC_%s',datestr))
-    runfBIRN_notes <- runfBIRN(date, fBIRN_scan4_input,fBIRN_scan4_output, fBIRN_temp_dir)
-    message(runfBIRN_notes$message)
-
-    #ASL processing script goes here
-
-    #Monthly ADNI Gradient Nonlinearity goes here
   }
   message(sprintf('fBIRN done for: %s',paste(datelist,collapse = ' ')))
 
