@@ -1,5 +1,5 @@
 #' @export
-hbicqa <- function(datelist='lookup',
+hbicqa <- function(datelist='lookup_oneyear',
                    basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                    imagedir = 'Images',
                    analysisdir = 'Analysis',
@@ -15,6 +15,8 @@ hbicqa <- function(datelist='lookup',
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
   if (datelist == 'lookup'){
      datelist_list <- findNewScans(rawdir, file.path(basedir,imagedir))
+  } else if(datelist == 'lookup_oneyear'){
+    datelist_list <- findNewScans(rawdir, file.path(basedir,imagedir), dayrange = 365)
   } else if(typeof(datelist)=='character'){
      error("datelist must be either 'lookup' or a number/vector with format MMDDYY")
   } else{
@@ -35,6 +37,7 @@ hbicqa <- function(datelist='lookup',
       } else {
         suffix <- ''
       }
+
 
       fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('qc_%s%s',datestr,suffix),'SCANS','4','DICOM')
       if(!is.na(fBIRN_temp_dir)){

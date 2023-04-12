@@ -1,14 +1,16 @@
 
 makeFigures <- function(longreport, figdir,dosave = TRUE){
 
-  longreport$measure <- as.character(longreport$measure)
-  #all measures
-  makeFigures_selectedMeasures(longreport,'_allmeasures',figdir, dosave = dosave)
+  phantom_list <- unique(longreport$phantom)
+  for(this_phantom in phantom_list){
+    longreport$measure <- as.character(longreport$measure)
+    #all measures
+    makeFigures_selectedMeasures(longreport,'_allmeasures',figdir, dosave = dosave, phantom = this_phantom)
 
-  #core measures
-  core_measures = c("percentFluc","drift","driftfit","SNR","SFNR","rdc")
-  makeFigures_selectedMeasures(subset(longreport, measure %in% core_measures),'_coremeasures',figdir,figwidth = 12, figheight = 6, dosave = dosave)
-
+    #core measures
+    core_measures = c("percentFluc","drift","driftfit","SNR","SFNR","rdc")
+    makeFigures_selectedMeasures(subset(longreport, measure %in% core_measures),'_coremeasures',figdir,figwidth = 12, figheight = 6, dosave = dosave, phantom = this_phantom)
+  }
 }
 
 makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE){
@@ -18,7 +20,9 @@ makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 
             '040118','070118','100118',
             '040119','070119','100119',
             '040120','070120','100120',
-            '040121','070121','100121'
+            '040121','070121','100121',
+            '040122','070122','100122',
+
   )
   current_measures <- unique(longreport$measure)
   num_measures <- length(current_measures)
@@ -29,6 +33,13 @@ makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 
 
   dot_outline_green <- '#3CA61C'
   dot_outline_red <- '#E12A1B'
+  dot_outline_lime <- '#00FF00'
+  dot_outline_pink <- '#FF00FF'
+
+  dot_outline_good_bullet <- dot_outline_green
+  dot_outline_bad_bullet <- dot_outline_red
+  dot_outline_good_fbirn <- dot_outline_lime
+  dot_outline_bad_fbirn <- dot_outline_pink
 
   #3/2 ratio for figure size.
   if(figheight == 'calc'){figheight = figwidth*2/3}

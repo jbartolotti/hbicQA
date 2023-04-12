@@ -1,5 +1,5 @@
 
-findNewScans <- function(rawdir, targetdir){
+findNewScans <- function(rawdir, targetdir, dayrange = 9999){
   arcscan <- dir(rawdir)
   arcscan_bullet <- arcscan[grepl('(^qc_[0-9]{6}$)',arcscan)] #capture beginning string (^), qc_, six digits, and end of string ($)
   arcscan_fbirn <- arcscan[grepl('(^qc_[0-9]{6}_fbirn)',tolower(arcscan))] #capture beginning string (^), qc_, six digits, _fbirn, and end of string ($)
@@ -11,28 +11,28 @@ findNewScans <- function(rawdir, targetdir){
   uncopied_bullet <- arcscan_bullet[!(arcscan_bullet %in% imscan_bullet)]
   uncopied_fbirn <- arcscan_fbirn[!(arcscan_fbirn %in% imscan_fbirn)]
 
-  oneyear <- as.numeric(Sys.Date())-365
+  dayrange_start <- as.numeric(Sys.Date())-dayrange
 
   uncopied_days_bullet <- unlist(lapply(uncopied_bullet,
                     function(x){
                       as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
                     }))
-  uncopied_oneyear_bullet <- uncopied_bullet[uncopied_days_bullet > oneyear]
+  uncopied_dayrange_bullet <- uncopied_bullet[uncopied_days_bullet > dayrange_start]
 
-  uncopied_oneyear_dateonly_bullet <- gsub('qc_','',uncopied_oneyear_bullet)
+  uncopied_dayrange_dateonly_bullet <- gsub('qc_','',uncopied_dayrange_bullet)
 
 
   uncopied_days_fbirn <- unlist(lapply(uncopied_fbirn,
                                         function(x){
                                           as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
                                         }))
-  uncopied_oneyear_fbirn <- uncopied_fbirn[uncopied_days_fbirn > oneyear]
+  uncopied_dayrange_fbirn <- uncopied_fbirn[uncopied_days_fbirn > dayrange_start]
 
-  uncopied_oneyear_dateonly_fbirn <- gsub('qc_','',uncopied_oneyear_fbirn)
-  uncopied_oneyear_dateonly_fbirn <- gsub('_fbirn','',uncopied_oneyear_dateonly_fbirn)
+  uncopied_dayrange_dateonly_fbirn <- gsub('qc_','',uncopied_dayrange_fbirn)
+  uncopied_dayrange_dateonly_fbirn <- gsub('_fbirn','',uncopied_dayrange_dateonly_fbirn)
 
-uncopied_list <- list(bullet = as.numeric(uncopied_oneyear_dateonly_bullet),
-     fbirn = as.numeric(uncopied_oneyear_dateonly_fbirn))
+uncopied_list <- list(bullet = as.numeric(uncopied_dayrange_dateonly_bullet),
+     fbirn = as.numeric(uncopied_dayrange_dateonly_fbirn))
   return(uncopied_list)
   }
 
