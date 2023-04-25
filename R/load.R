@@ -1,54 +1,44 @@
 
-findNewScans <- function(rawdir, targetdir, dayrange = 9999){
-  arcscan <- dir(rawdir)
-  arcscan_bullet <- arcscan[grepl('(^qc_[0-9]{6}$)',arcscan)] #capture beginning string (^), qc_, six digits, and end of string ($)
-  arcscan_fbirn <- arcscan[grepl('(^qc_[0-9]{6}_fbirn)',tolower(arcscan))] #capture beginning string (^), qc_, six digits, _fbirn, and end of string ($)
+LOAD.findNewScans <- function(rawdir, targetdir, phantoms, dayrange = 9999){
+  arcscan <- list(all = dir(rawdir))
+  imscan <- list(all = dir(targetdir))
+  uncopied <- list()
+  returndat <- list()
 
-    imscan <- dir(targetdir)
-  imscan_bullet <- imscan[grepl('(^qc_[0-9]{6}$)',imscan)] #capture qc_, six digits, and end of string ($)
-  imscan_fbirn <- imscan[grepl('(^qc_[0-9]{6}_fbirn$)',tolower(imscan))] #capture qc_, six digits, _fbirn, and end of string ($)
+  for(p in phantoms){
+    # Get contents of archive and images directory, and get the names of arc folders not yet in images.
+    arcscan[[p$name]] <- arcscan$all[grepl(sprintf('(^%s[0-9]{6}%s$)',p$prefix, p$suffix),arcscan$all)] #capture beginning string (^), qc_, six digits, suffix (i.e. '' or '_fbirn') and end of string ($)
+    imscan[[p$name]] <- imscan$all[grepl(sprintf('(^%s[0-9]{6}%s$)',p$prefix, p$suffix),imscan$all)] #capture qc_, six digits, suffix, and end of string ($)
+    uncopied[[p$name]] <- arcscan[[p$name]][ !(arcscan[[p$name]] %in% imscan[[p$name]]) ]
 
-  uncopied_bullet <- arcscan_bullet[!(arcscan_bullet %in% imscan_bullet)]
-  uncopied_fbirn <- arcscan_fbirn[!(arcscan_fbirn %in% imscan_fbirn)]
+    dayrange_start <- as.numeric(Sys.Date())-dayrange
 
-  dayrange_start <- as.numeric(Sys.Date())-dayrange
+    #get the date portion between the prefix and suffix and convert to epoch.
+    uncopied_days <- unlist(lapply(uncopied[[p$name]],
+                      function(x){
+                        as.numeric(as.Date(
+                          gsub(sprintf(".*%s(.+)%s*",p$prefix,p$suffix), "\\1", x), format = '%m%d%y'))
+                      }))
+    #extract the list of uncopied scans that have epochs later than the start date.
+    uncopied_dayrange <- uncopied[[p$name]][uncopied_days > dayrange_start]
 
-  uncopied_days_bullet <- unlist(lapply(uncopied_bullet,
-                    function(x){
-                      as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
-                    }))
-  uncopied_dayrange_bullet <- uncopied_bullet[uncopied_days_bullet > dayrange_start]
+    # get the date characters (i.e. MMDDYY) from the matched list by removing the prefix and suffix
+    uncopied_dayrange_date <-gsub(sprintf(".*%s(.+)%s*",p$prefix,p$suffix), "\\1", uncopied_dayrange)
 
-  uncopied_dayrange_dateonly_bullet <- gsub('qc_','',uncopied_dayrange_bullet)
-
-
-  uncopied_days_fbirn <- unlist(lapply(uncopied_fbirn,
-                                        function(x){
-                                          as.numeric(as.Date(gsub('qc_','',x), format = '%m%d%y'))
-                                        }))
-  uncopied_dayrange_fbirn <- uncopied_fbirn[uncopied_days_fbirn > dayrange_start]
-
-  uncopied_dayrange_dateonly_fbirn <- gsub('qc_','',uncopied_dayrange_fbirn)
-  uncopied_dayrange_dateonly_fbirn <- gsub('_fbirn','',uncopied_dayrange_dateonly_fbirn)
-
-uncopied_list <- list(bullet = as.numeric(uncopied_dayrange_dateonly_bullet),
-     fbirn = as.numeric(uncopied_dayrange_dateonly_fbirn))
-  return(uncopied_list)
+    returndat[[p$name]] <- uncopied_dayrange_date
   }
+#uncopied_list <- list(bullet = as.numeric(uncopied_dayrange_dateonly_bullet),
+#     fbirn = as.numeric(uncopied_dayrange_dateonly_fbirn))
+  return(returndat)
+}
 
 
 
 
-move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
-  datestr <- sprintf('%06d',date)
-  if(phantom == 'fbirn'){
-    suffix <- '_fbirn'
-  } else {
-    suffix <- ''
-  }
+LOAD.move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
 
-  rawfile <- file.path(rawdir,sprintf('qc_%s%s',datestr,suffix))
-  savefile <- file.path(savedir,sprintf('qc_%s%s',datestr,suffix))
+  rawfile <- file.path(rawdir,sprintf('%s%s%s',phantom$prefix, date, phantom$suffix))
+  savefile <- file.path(savedir,sprintf('%s%s%s',phantom$prefix, date, phantom$suffix))
 
   do_copy <- TRUE
   copy_succeed <- FALSE
@@ -76,19 +66,21 @@ move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
   notes$did_copy <- copy_succeed
   mymessage <- as.character()
   if (notes$target_exists) {
-    mymessage <- sprintf('proceeding with file %s.\n',savefile)
+    mymessage <- sprintf('Data file %s ready for processing.', savefile)
     if(already_existed){
       if(overwrite){was_or_not <- '*WAS*'} else{was_or_not = 'was *NOT*'}
       mymessage <- c(mymessage,sprintf('  file already existed and %s overwritten',was_or_not))
-    }
+    } else {
+      mymessage <- c(mymessage, sprintf('  file was successfully copied from %s.\n',rawfile))
+      }
   }else{stop(sprintf('FAIL: %s does not exist or is not readable.', savefile))}
   notes$message <- mymessage
 
   return(notes)
 }
 
-readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA, scan_names='all',scans_after_epoch='all' , fixfoldernames = TRUE){
-  qa_dirs <- listQADirs(basedir,analysisdir,
+LOAD.readQAMeasures <- function(basedir, analysisdir, measures, phantom, read_qa_measures = NA, scan_names='all',scans_after_epoch='all' , fixfoldernames = TRUE){
+  qa_dirs <- LOAD.listQADirs(basedir,analysisdir, phantom,
                         scan_names = scan_names,scans_after_epoch = scans_after_epoch,
                         fixfoldernames = fixfoldernames)
   #If all measures of interest are in the already completed report,
@@ -112,10 +104,10 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
       qa_measures[dim(qa_measures)[1]+1,] = NA
       rr <- dim(qa_measures[1])
       qa_measures[rr,'folder'] <- qa
-      qa_measures[rr,'scandate'] <- readMeasure('scandate',qa_xml_file)
+      qa_measures[rr,'scandate'] <- UTIL.readMeasure('scandate',qa_xml_file)
       for (mm in measures)
       {
-        qa_measures[rr,mm] <- as.numeric(readMeasure(mm,qa_xml_file)[1])
+        qa_measures[rr,mm] <- as.numeric(UTIL.readMeasure(mm,qa_xml_file)[1])
       }
     }
   }
@@ -138,11 +130,10 @@ readQAMeasures <- function(basedir, analysisdir, measures, read_qa_measures = NA
 #   If it is < 5000, it makes the minimum that many days before the current date. So 90 will return all folders with a datename that is < 90 days back.
 #Note that this way of filtering based on foldernames is not perfect because the folder names had errors.
 
-listQADirs <- function(basedir,analysisdir,scan_names='all',scans_after_epoch='all',fixfoldernames=TRUE){
+LOAD.listQADirs <- function(basedir,analysisdir, phantom, scan_names='all',scans_after_epoch='all',fixfoldernames=TRUE){
   qa_dirs <- dir(file.path(basedir,analysisdir))
-  qa_dirs <- qa_dirs[grep('QC_',qa_dirs)]
-  qa_dirs <- qa_dirs[grep('_fBIRN',qa_dirs,invert = TRUE)]
-  if(fixfoldernames){qa_dirs <- fixQAfoldernames(qa_dirs)}
+  qa_dirs <- qa_dirs[grep(sprintf('^%s[0-9]{6}%s$',phantom$postprocess_prefix, phantom$postprocess_suffix),qa_dirs)]
+  if(fixfoldernames){qa_dirs <- UTIL.fixQAfoldernames(qa_dirs)}
   if (length(scan_names)>1 || scan_names != 'all'){
     qa_dirs <- qa_dirs[qa_dirs %in% scan_names]
   }
@@ -150,7 +141,9 @@ listQADirs <- function(basedir,analysisdir,scan_names='all',scans_after_epoch='a
     if(scans_after_epoch > 5000){min_epoch <- scans_after_epoch
     }else{min_epoch <- as.numeric(Sys.Date())-scans_after_epoch}
 
-    qa_epoch <- unlist(lapply(qa_dirs,function(x){as.numeric(as.Date(gsub('QC_','',x), format = '%m%d%y'))}))
+    qa_epoch <- unlist(lapply(qa_dirs,function(x){
+      as.numeric(as.Date( gsub(sprintf(".*%s(.+)%s*",p$postprocess_prefix,p$postprocess_suffix), "\\1", x) , format = '%m%d%y'))
+      }))
     qa_dirs <- qa_dirs[qa_epoch > min_epoch]
     }
   return(qa_dirs)

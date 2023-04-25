@@ -1,15 +1,11 @@
-runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
+PROCESS.runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
   notes <- list()
   mymessage <- as.character()
-  datestr <-  sprintf('%06d',date)
   pwd <- getwd()
-  if(phantom == 'fbirn'){
-    suffix <- '_fbirn'
-  } else {
-    suffix <- ''
-  }
   already_processed <- FALSE
-  if(!is.na(tempdir)){
+
+  #If using temporary working directory
+    if(!is.na(tempdir)){
     setwd(indir4)
     system2('tar', args = c(
       '-zcf',
@@ -26,11 +22,11 @@ runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
       file.path(tempdir,'DICOM.tar.gz')
     ), wait = TRUE
     )
-
-
     mymessage <- c(mymessage,sprintf('Temporary directory %s created.\nContents of %s copied to %s.',tempdir,indir4,tempdir))
     datadir <- tempdir
-    } else {datadir <- indir4}
+  } else {datadir <- indir4}
+
+
   if(file.exists(outdir4) && length(dir(outdir4, all.files=TRUE,no.. = TRUE)) > 0)
   {
     already_processed <- TRUE
@@ -39,11 +35,11 @@ runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
     system2('dicom2bxh', args = c(
       '--xcede',
       file.path(datadir,'*.dcm'),
-      file.path(datadir,sprintf('QC_%s%s_WRAPPED.xml',datestr,suffix))
+      file.path(datadir,sprintf('QC_%s%s_WRAPPED.xml',date,suffix))
     ), wait= TRUE
     )
     system2('fmriqa_phantomqa.pl', args = c(
-      file.path(datadir, sprintf('QC_%s%s_WRAPPED.xml',datestr,suffix)),
+      file.path(datadir, sprintf('QC_%s%s_WRAPPED.xml',date,suffix)),
       outdir4
     ), wait = TRUE
     )
@@ -59,7 +55,7 @@ runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
   }
   if(file.exists(outdir4) && length(dir(outdir4, all.files=TRUE,no.. = TRUE)) > 0){
 
-    mymessage <- sprintf('fBIRN complete. Proceeding with file %s\n',outdir4)
+    mymessage <- sprintf('fBIRN complete: %s\n',outdir4)
     if(already_processed){
       mymessage <- c(mymessage,'NB: data already existed and was not reprocessed.')
     }
@@ -70,7 +66,7 @@ runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
 }
 
 windir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA'
-getTolerances <- function(report, dofigures = FALSE, remove_duplicate_rows = TRUE){
+PROCESS.getTolerances <- function(report, dofigures = FALSE, remove_duplicate_rows = TRUE){
   if(class(report) == 'character'){
     report <- read.csv(report)
   }

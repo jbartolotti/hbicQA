@@ -13,6 +13,9 @@ makeFigures <- function(longreport, figdir,dosave = TRUE){
   }
 }
 
+
+
+
 makeFigures_selectedMeasures <- function(longreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE){
   jandates = c('010117','010118','010119','010120','010121','010122')
   dates = c('070116','100116',

@@ -1,5 +1,5 @@
 
-checkPath <- function(basedir,rawdir,reportdir){
+UTILS.checkPath <- function(basedir,rawdir,reportdir){
   # addpath /usr/local/bin/bxh_xcede_tools-1.11.14/bin
   syspath <- list()
   syspath$afni <- suppressWarnings(system2('which', args = 'afni', stdout = TRUE,stderr = FALSE))
@@ -33,7 +33,7 @@ checkPath <- function(basedir,rawdir,reportdir){
 
 }
 
-readMeasure <- function(measure,file)
+UTIL.readMeasure <- function(measure,file)
 {
   #read the value for a measure of interest from an xml document
   val <- system(sprintf('cat %s | grep \'"%s"\' ',file,measure),intern = TRUE)
@@ -46,7 +46,7 @@ readMeasure <- function(measure,file)
   return(val)
 }
 
-allMeasures <- function(){
+UTIL.allMeasures <- function(){
   return(c('mean','SNR','SFNR','std','percentFluc','drift','driftfit','rdc',
            'minCMassX','maxCMassX','meanCMassX','dispCMassX','driftCMassX',
            'minCMassY','maxCMassY','meanCMassY','dispCMassY','driftCMassY',
@@ -57,7 +57,7 @@ allMeasures <- function(){
            'meanGhost','meanBrightGhost'))
 }
 
-fixQAfoldernames <- function(qa_dirs){
+UTIL.fixQAfoldernames <- function(qa_dirs){
   qa_dirs[qa_dirs == 'QC_012317_rescan'] <- 'QC_012417'
   qa_dirs[qa_dirs == 'QC_07032019'] <- 'QC_070319'
   qa_dirs[qa_dirs == 'QC_07082019'] <- 'QC_070819'

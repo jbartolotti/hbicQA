@@ -1,3 +1,5 @@
+
+check_qc_archive_status <- function(){
 library(lubridate)
 
 #ON SYNAPSE
@@ -98,3 +100,4 @@ aggdf <- aggregate(target_delta ~ session, data = df, FUN = sum)
 
 aa <- df[df$session %in% aggdf$session[aggdf$target_delta == 0] & df$series == 1,]
 
+}
