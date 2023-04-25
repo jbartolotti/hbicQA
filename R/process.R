@@ -35,11 +35,11 @@ PROCESS.runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
     system2('dicom2bxh', args = c(
       '--xcede',
       file.path(datadir,'*.dcm'),
-      file.path(datadir,sprintf('QC_%s%s_WRAPPED.xml',date,suffix))
+      file.path(datadir,sprintf('QC_%s%s_WRAPPED.xml',date,phantom$suffix))
     ), wait= TRUE
     )
     system2('fmriqa_phantomqa.pl', args = c(
-      file.path(datadir, sprintf('QC_%s%s_WRAPPED.xml',date,suffix)),
+      file.path(datadir, sprintf('QC_%s%s_WRAPPED.xml',date,phantom$suffix)),
       outdir4
     ), wait = TRUE
     )
