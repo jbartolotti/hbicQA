@@ -59,7 +59,7 @@ PROCESS.runfBIRN <- function(date, indir4, outdir4, phantom, tempdir = NA){
     if(already_processed){
       mymessage <- c(mymessage,'NB: data already existed and was not reprocessed.')
     }
-  } else{stop(sprintf('FAIL: %s does not exist or is not readable.', outdir4))}
+  } else{warning(sprintf('FAIL: %s does not exist or is not readable.', outdir4))}
 
   notes$message <- mymessage
   return(notes)

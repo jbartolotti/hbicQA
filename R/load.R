@@ -44,7 +44,7 @@ LOAD.move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
   copy_succeed <- FALSE
   already_existed <- FALSE
   if (!file.exists(rawfile))
-  {stop(sprintf('ERROR: %s does not exist. Date should be format MMDDYY.',rawfile))}
+  {warning(sprintf('%s does not exist. Date should be format MMDDYY.',rawfile))}
   if (file.exists(savefile))
   {
     already_existed <- TRUE
@@ -58,7 +58,7 @@ LOAD.move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
     dir.create(savefile, showWarnings = FALSE)
     #yes, copy to savedir. Otherwise it will make another new folder inside the savefile folder
     copy_succeed <- file.copy(from = rawfile, to = savedir, recursive = TRUE)
-    if (!copy_succeed){stop(sprintf('copy from %s to %s failed. Do you have write permissions?',rawfile,savefile))}
+    if (!copy_succeed){warning(sprintf('copy from %s to %s failed. Do you have write permissions?',rawfile,savefile))}
   }
 
   notes <- list()
@@ -73,7 +73,7 @@ LOAD.move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
     } else {
       mymessage <- c(mymessage, sprintf('  file was successfully copied from %s.\n',rawfile))
       }
-  }else{stop(sprintf('FAIL: %s does not exist or is not readable.', savefile))}
+  }else{warning(sprintf('%s does not exist or is not readable.', savefile))}
   notes$message <- mymessage
 
   return(notes)
