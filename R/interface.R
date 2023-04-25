@@ -69,7 +69,7 @@ hbicqa <- function(datelist='lookup_oneyear',
 
       #Monthly ADNI Gradient Nonlinearity goes here
     }
-    message(sprintf('fBIRN done for % phantom: %s',p$name, paste(datelist_list[[p$name]],collapse = ' ')))
+    message(sprintf('fBIRN done for %s, phantom: %s',p$name, paste(datelist_list[[p$name]],collapse = ' ')))
 
     qa_measures[[p$name]]<- NA
     if (doreports){
