@@ -62,8 +62,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
   dot_outline_good_bullet <- dot_outline_green
   dot_outline_bad_bullet <- dot_outline_red
-  dot_outline_good_fbirn <- dot_outline_lime
-  dot_outline_bad_fbirn <- dot_outline_pink
+  dot_outline_good_fbirn <- dot_outline_green #dot_outline_lime
+  dot_outline_bad_fbirn <- dot_outline_red #dot_outline_pink
 
   yextents <- list(
     drift = c(0,4),
@@ -87,15 +87,20 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
   phantoms$bullet$shade = shadeorange
   phantoms$bullet$line = lineorange
   phantoms$bullet$darkline = darklineorange
+  phantoms$bullet$dot_outline_good = dot_outline_good_bullet
+  phantoms$bullet$dot_outline_bad = dot_outline_good_bullet
+
   phantoms$fbirn$shade = shadeblue
   phantoms$fbirn$line = lineblue
   phantoms$fbirn$darkline = darklineblue
+  phantoms$bullet$dot_outline_good = dot_outline_good_fbirn
+  phantoms$bullet$dot_outline_bad = dot_outline_good_fbirn
 
   for(p in phantoms){
     index = index+1
     FIGURES.zscoredotplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
                           oneyeardat_mostrecent[[p$name]],
-                          figdir, suffix, p$name, dosave, num_measures
+                          figdir, suffix, p$name, dosave, num_measures, p$dot_outline_good, p$dot_outline_bad
                           )
     FIGURES.zscorelineplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
                           oneyeardat_mostrecent[[p$name]],
@@ -111,7 +116,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
         ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
         ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
         ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-        ggplot2::labs(x = '',title = sprintf('%s. 60day smooth. Shaded = +/- 1&2 SD',thismeasure), y = thismeausure) +
+        ggplot2::labs(x = '',title = sprintf('%s. 60day smooth. Shaded = +/- 1&2 SD',thismeasure), y = thismeasure) +
         ggplot2::geom_point() +
         ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
                              fill = p$shade, alpha = .25) +
@@ -133,7 +138,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
   dat <- rbind(subset(oneyeardat$bullet, scandate_epoch > as.numeric(Sys.Date())-60),
                subset(oneyeardat$fbirn, scandate_epoch > as.numeric(Sys.Date())-60))
   lastscan <- rbind(oneyeardat_mostrecent$bullet,oneyeardat_mostrecent$fbirn)
-  FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures)
+  FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, dot_outline_green, dot_outline_red)
   FIGURES.zscorelineplot(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, mycolors)
 
   longreport$bullet$phantom = 'bullet'
@@ -252,7 +257,7 @@ oldfigures = function(){
 
 
 
-FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures){
+FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, dot_outline_good, dot_outline_bad){
   #zscore dotplot 60 days, 1&2sd calced on 365 to present
   ggplot2::ggplot(dat, ggplot2::aes(x = measure, y = z_value_smooth60, alpha = scandate_epoch)) +
     ggplot2::theme_bw() +
@@ -263,9 +268,9 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
     # ggbeeswarm::geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
     #                             width = .2, size = 2) +
     ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 ),
-                        color = dot_outline_green, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+                        color = dot_outline_good, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
     ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2),
-                        color = dot_outline_red, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+                        color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
 
     ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
     ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD \nPhantom: %s',Sys.Date()-60,Sys.Date(), phantom_name)) +
@@ -276,7 +281,7 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
 
 }
 
-FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_names, dosave, num_measures){
+FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_names, dosave, num_measures, dot_outline_good, dot_outline_bad){
 
 mylabs = rep('',num_measures*2)
 mylabs[seq(1,num_measures*2,2)] = current_measures
@@ -290,13 +295,13 @@ ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alp
   # ggbeeswarm::geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
   #                             width = .2, size = 2) +
   ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 & phantom == phantom_names[1]),
-                      color = dot_outline_green, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+                      color = dot_outline_good, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
   ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2 & phantom == phantom_names[1]),
-                      color = dot_outline_red, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+                      color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
   ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 & phantom == phantom_names[2]),
-                      color = dot_outline_green, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
+                      color = dot_outline_good, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
   ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2 & phantom == phantom_names[2]),
-                      color = dot_outline_red, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
+                      color = dot_outline_bad, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
   ggplot2::geom_vline(xintercept = seq(.5,(num_measures*2)+.5,2)) +
   #   ggplot2::coord_cartesian(xlim = c(.5, num_measures*2+.5)), expand = FALSE)
 
