@@ -142,7 +142,7 @@ LOAD.listQADirs <- function(basedir,analysisdir, phantom, scan_names='all',scans
     }else{min_epoch <- as.numeric(Sys.Date())-scans_after_epoch}
 
     qa_epoch <- unlist(lapply(qa_dirs,function(x){
-      as.numeric(as.Date( gsub(sprintf(".*%s(.+)%s*",p$postprocess_prefix,p$postprocess_suffix), "\\1", x) , format = '%m%d%y'))
+      as.numeric(as.Date( gsub(sprintf(".*%s(.+)%s*",phantom$postprocess_prefix,phantom$postprocess_suffix), "\\1", x) , format = '%m%d%y'))
       }))
     qa_dirs <- qa_dirs[qa_epoch > min_epoch]
     }
