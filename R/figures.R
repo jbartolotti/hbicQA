@@ -104,7 +104,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
                           )
     FIGURES.zscorelineplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
                           oneyeardat_mostrecent[[p$name]],
-                          figdir, suffix, p$name, dosave, num_measures, mycolors[index], numcol
+                          figdir, suffix, p$name, dosave, num_measures, mycolors[index], numcol, numrow
     )
 
 
@@ -316,7 +316,7 @@ ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alp
 
 }
 
-FIGURES.zscorelineplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, mycolors, numcol){
+FIGURES.zscorelineplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, mycolors, numcol, numrow){
 
 #zscore facet lineplot 60 days, 1&2sd calced on 365 to present
 ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_smooth60, alpha = scandate_epoch, color = phantom)) +
