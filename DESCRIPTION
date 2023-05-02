@@ -1,6 +1,6 @@
 Package: hbicQA
 Title: Run fMRI QA for HBIC Scanners
-Version: 0.0.1.21
+Version: 0.0.1.23
 Authors@R: 
     person("James", "Bartolotti", , "jbartolotti2@kumc.edu", role = c("aut", "cre"),
            comment = c())
@@ -17,4 +17,5 @@ Imports:
   reshape2,
   ggplot2,
   ggbeeswarm,
-  data.table
+  data.table,
+  png

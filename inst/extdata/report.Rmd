@@ -12,6 +12,7 @@ output:
 params:
     mytext: ['a','b']
     mynums: [1, 2]
+    phantoms: NA
     longreport: NA
     figdir: NA
 ---
@@ -29,66 +30,146 @@ figdir <- params$figdir
 
 these_measures <- c('drift','driftfit','percentFluc','rdc','SFNR','SNR')
 
-lastscan <- longreport[longreport$scandate_epoch == max(longreport$scandate_epoch,na.rm = TRUE),]
-lastscan <- lastscan[!is.na(lastscan$scandate_epoch),]
-lastscandate_str <- format(as.Date(unique(lastscan$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
+lastscan <- list()
+lastscandate_str <- list()
+passcolor <- list()
+passtext <- list()
+oneyeardat <- list()
 
-lastscan_checkpass <- lastscan[lastscan$measure %in% these_measures,]
+for(p in phantoms){ 
+lastscan[[p$name]] <- longreport[[p$name]][longreport[[p$name]]$scandate_epoch == max(longreport[[p$name]]$scandate_epoch,na.rm = TRUE),]
+lastscan[[p$name]] <- lastscan[[p$name]][!is.na(lastscan[[p$name]]$scandate_epoch),]
+lastscandate_str[[p$name]] <- format(as.Date(unique(lastscan[[p$name]]$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
+
+lastscan_checkpass <- lastscan[[p$name]][lastscan[[p$name]]$measure %in% these_measures,]
 allpass <- all(lastscan_checkpass$value <= lastscan_checkpass$value_smooth365+2*lastscan_checkpass$value_smooth_sd365 & lastscan_checkpass$value >= lastscan_checkpass$value_smooth365-2*lastscan_checkpass$value_smooth_sd365) 
 if(allpass){
-  passcolor = text_green
-  passtext = 'All metrics in acceptable range.'
+  passcolor[[p$name]] = text_green
+  passtext[[p$name]] = 'All metrics in acceptable range.'
 } else {
-  passcolor = text_red
-  passtext = 'Attention: metrics out of range.'
+  passcolor[[p$name]] = text_red
+  passtext[[p$name]] = 'Attention: metrics out of range.'
 }
+
+
+oneyeardat[[p$name]] <- subset(longreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
+  oneyeardat[[p$name]]$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
+    (oneyeardat[[p$name]]$value[x] - mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)) / sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)
+    }))
+}
+  
+lastscan_values <- data.frame(
+  measure = these_measures,
+  LastScan_bullet = lastscan$bullet$value[
+    unlist(lapply(these_measures, function(x){
+      which(lastscan$bullet$measure == x)}
+      ))
+    ],
+  LastScan_fbirn = lastscan$fbirn$value[
+    unlist(lapply(these_measures, function(x){
+      which(lastscan$fbirn$measure == x)}
+      ))
+    ]
+)
+
+lastscan_values$mean_bullet <- unlist(lapply(these_measures, function(x){
+  mean(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
+  }
+))
+
+lastscan_values$sd_bullet <- unlist(lapply(these_measures, function(x){
+  sd(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
+  }
+))
+
+lastscan_values$Mean_2SD_bullet <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
+  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_bullet[x],lastscan_values$mean_bullet[x]-2*lastscan_values$sd_bullet[x], lastscan_values$mean_bullet[x]+2*lastscan_values$sd_bullet[x])
+  }
+))
+
+lastscan_values$mean_fbirn <- unlist(lapply(these_measures, function(x){
+  mean(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
+  }
+))
+
+lastscan_values$sd_fbirn <- unlist(lapply(these_measures, function(x){
+  sd(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
+  }
+))
+
+lastscan_values$Mean_2SD_fbirn <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
+  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_fbirn[x],lastscan_values$mean_fbirn[x]-2*lastscan_values$sd_fbirn[x], lastscan_values$mean_fbirn[x]+2*lastscan_values$sd_fbirn[x])
+  }
+))
 
 #Table for most recent scan core values
 measure_pretty <- list()
 measure_pretty$SNR <- 'SNR'
 measure_pretty$SFNR <- 'SFNR'
-measure_pretty$percentFluc <- '% Fluctuation'
+measure_pretty$percentFluc <- '% Fluct.'
 measure_pretty$drift <- 'Drift'
-measure_pretty$driftfit <- 'Drift (Fit)'
+measure_pretty$driftfit <- 'Drift(Fit)'
 measure_pretty$rdc <- 'RDC'
 
 
+numchar_bullet <- nchar(lastscan_values$LastScan_bullet)  
+numchar_fbirn <- nchar(lastscan_values$LastScan_fbirn)  
+numchar_bullet_msd <- nchar(lastscan_values$Mean_2SD_bullet)  
 
-oneyeardat <- subset(longreport, scandate_epoch > as.numeric(Sys.Date())-365)
-  oneyeardat$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat)[1], function(x){
-    (oneyeardat$value[x] - mean(oneyeardat$value[oneyeardat$measure == oneyeardat$measure[x]],na.rm = TRUE)) / sd(oneyeardat$value[oneyeardat$measure == oneyeardat$measure[x]],na.rm = TRUE)
-    }))
+maxnumchar_bullet <- max(numchar_bullet)
+maxnumchar_fbirn <- max(numchar_fbirn)
+maxnumchar_bullet_msd <- max(numchar_bullet_msd)
 
-  
-lastscan_values <- data.frame(
-  measure = these_measures,
-  LastScan = lastscan$value[unlist(lapply(these_measures, function(x){which(lastscan$measure == x)}))])
-  lastscan_values$mean <- unlist(lapply(these_measures, function(x){mean(oneyeardat$value[oneyeardat$measure == x], na.rm = TRUE)}))
-  lastscan_values$sd <- unlist(lapply(these_measures, function(x){sd(oneyeardat$value[oneyeardat$measure == x], na.rm = TRUE)}))
-  lastscan_values$Mean_2SD <- unlist(lapply(1:dim(lastscan_values)[1], function(x){sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean[x],lastscan_values$mean[x]-2*lastscan_values$sd[x], lastscan_values$mean[x]+2*lastscan_values$sd[x])}))
+lastscan_values$LastScan_bullet_spaced <- unlist(lapply(lastscan_values$LastScan_bullet, function(x){
+  paste(c(x,rep('&nbsp;',(maxnumchar_bullet+4)-nchar(x))),collapse='')
+  }
+))
+lastscan_values$Mean_2SD_bullet_spaced <- unlist(lapply(lastscan_values$Mean_2SD_bullet, function(x){
+  paste(c(x,rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(x))),collapse='')
+  }
+))
 
-numchar <- nchar(lastscan_values$LastScan)  
-maxnumchar <- max(numchar)
-lastscan_values$LastScan_spaced <- unlist(lapply(lastscan_values$LastScan, function(x){paste(c(x,rep('&nbsp;',(maxnumchar+4)-nchar(x))),collapse='')}))
+lastscan_values$LastScan_fbirn_spaced <- unlist(lapply(lastscan_values$LastScan_fbirn, function(x){
+  paste(c(x,rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(x))),collapse='')
+  }
+))
 
 row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
 rnumchar <- nchar(row.names(lastscan_values))
 maxrnumchar <- max(rnumchar)
-lastscan_values$measure_spaced <- unlist(lapply(row.names(lastscan_values), function(x){paste(c(x,rep('&nbsp;',(maxrnumchar+4)-nchar(x))),collapse='')}))
+lastscan_values$measure_spaced <- unlist(lapply(row.names(lastscan_values), function(x){
+  paste(c(x,rep('&nbsp;',(maxrnumchar+4)-nchar(x))),collapse='')
+  }
+))
 
-lastscan_values$toprint <- paste(lastscan_values$measure_spaced,lastscan_values$LastScan_spaced, lastscan_values$Mean_2SD,sep = '')
+lastscan_values$toprint <- paste(lastscan_values$measure_spaced,
+                                 lastscan_values$LastScan_bullet_spaced, lastscan_values$Mean_2SD_bullet_spaced,
+                                 lastscan_values$LastScan_fbirn_spaced, lastscan_values$Mean_2SD_fbirn,
+                                 sep = '')
 measure_head <- 'Measure'
-lastscan_head <- 'Value'
-msd_head <- 'Mean [2SD]'
+lastscan_bullet_head <- 'Bullet'
+msd_bullet_head <- '1Yr Mean [2SD]'
+lastscan_fbirn_head <- 'fBIRN'
+msd_fbirn_head <- '1Yr Mean [2SD]'
+
 header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)),
-                  lastscan_head, rep('&nbsp;',(maxnumchar+4)-nchar(lastscan_head)),
-                  msd_head),collapse = '')
+                  lastscan_bullet_head,
+                  rep('&nbsp;',(maxnumchar_bullet+4)-nchar(lastscan_bullet_head)),
+                  msd_bullet_head,
+                  rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(msd_bullet_head)),
+                  lastscan_fbirn_head,
+                  rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(lastscan_fbirn_head)),
+                  msd_fbirn_head
+                  ),collapse = '')
 ```
 
 
 # fBIRN
 ## Last Scan (`r lastscandate_str`)
-QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolor`>`r passtext``</span>
+QA metrics from last bullet-phantom scan on `r lastscandate_str$bullet`. <span style=color:`r passcolor$bullet`>`r passtext$bullet`</span>
+
+QA metrics from last fbirn-phantom scan on `r lastscandate_str$fbirn`. <span style=color:`r passcolor$fbirn`>`r passtext$fbirn`</span>
+
 <tt>
 
 `r sprintf('<b>%s</b>',header)`
@@ -104,53 +185,104 @@ QA metrics from last scan on `r lastscandate_str`. <span style=color:`r passcolo
 Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan. Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures.png'))
+knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures_bullet_fbirn.png'))
 ```
 
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures.png'))
+knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bullet_fbirn.png'))
 ```
  
 ## Since 2017
-QA metrics since Jan 1, 2017. The light blue line represents 60-day smoothing of QA metrics. Blue shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are inidivdual QA scans. Red dots were outside +/- 2SDs.
+Historical QA metrics. The first image in each section charts values from scans using the bullet phantom since 2017. The light orange line represents 60-day smoothing of QA metrics. Shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are individual QA scans. Red dots were outside +/- 2SDs.
 
-Terms:
+The second image in each section charts values from scans using the bullet phantom and the fbirn phantom since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red Xs indicate scans outside +/- 2SDs.
 
-**Signal Image**: averaged image, voxel by voxel, across all timepoints
 
-**Temporal Fluctuation Noise Image**: First, the time series at each voxel is de-trended with a second order polynomial. The 
+The **Central ROI**, a 21x21 ROI centered in the middle of the image is used to calculate all QA metrics below.
 
 ### Drift
-Drift calculation: 100*(max raw signal - min raw signal) / mean signal intensity
+The two drift measures quantify the extent of the change in the mean signal over the course of the scan and are sensitive to changes in scanner temperature, i.e. "warming up". Stable scanners average < 1.0% drift.
+
+**Signal Image**: At each voxel, the average value across all timepoints. **Signal Summary** is the average across these voxel values.
+
+Drift is calculated as the range in the raw signal divided by the mean signal and expressed as a percentage. *100 × (maximum raw signal - minimum raw signal) / signal summary*.
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60.png'))
+knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60_bullet_fbirn.png'))
+
 ```
 
 ### Drift (Fit)
+Instead of using the max and min raw signals as above, a second-order polynomial is fit to the average timeseries, and the max and min values of the polynomial model are used.
+
+Drift (Fit) is calculated as *100 × (maximum fit value - minimum fit value) / signal summary*.
+
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60.png'))
+knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60_bullet_fbirn.png'))
 ```
 
 ### Percent Fluctuation
-```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60.png'))
-```
+Fluctuation measures temporal stability across the image. Stable scanners average <0.2% fluctuation, and <0.1% is a good lower level.
 
-### RDC
-```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60.png'))
-```
-
-### SFNR
-Signal-to-Fluctuation-Noise Ratio (SFNR).
+First, a second-order polynomial is fit to the average timeseries. The mean signal intensity (average across voxels across time, before detrending), and the SD of the residuals to the fit line are computed. **Percent Fluctuation** is expressed as a percentage, and calculated *100 × (SD of residuals) / (mean signal intensity)*.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60.png'))
+knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet_fbirn.png'))
 ```
 
-### SNR
+### RDC (Radius of decorrelation)
+Scanner instabilities that have local effects will increase inter-voxel correlations; RDC measures the degree to which voxels are independent of their neighbors. 
+
+The coefficient of variation (CV) is the SD of a time-series divided by the mean of the time-series. The CV of an ROI with all independent voxels scales with the square root of the number of voxels in the ROI. In actuality, low level correlations between voxels place a lower limit on the CV. 
+
+First, the CV is calculated for the full central ROI (i.e., 21x21 voxels). The **Radius of Decorrelation** is defined as the width of the theoretical square ROI (with completely independent voxels) that yields the same CV as the measured CV for the 21x21 ROI. Higher values are better.
+
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60.png'))
+knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60_bullet_fbirn.png'))
 ```
 
+### SFNR -- Temporal Noise
+SFNR measures signal stability over time -- signal power relative to temporal noise. 
+
+**Signal Image**: At each voxel, the average value across all timepoints.
+
+**Temporal Fluctuation Noise Image**: At each voxel, the time-series is de-trended with a second order polynomial, and the SD of the residuals is computed.
+
+**Signal-to-Fluctuation-Noise Ratio (SFNR)**: The **Signal Image** is divided by the **Temporal Fluctuation Noise Image** voxel by voxel. The average across voxels is the SFNR value charted below. 
+
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60_bullet_fbirn.png'))
+```
+
+### SNR -- Spatial Noise
+SNR measure signal stability across the image voxels.
+
+**Signal Image**: At each voxel, the average value across all timepoints. **Signal Summary** is the average across these voxel values.
+
+**Static Spatial Noise Image**: First, the odd-numbered images and even-numbered images are separately summed (sumODD, sumEVEN). The difference between the two (sumODD - sumEVEN) is a raw measure of static (i.e., non-time-varying) spatial noise that removes the constant structure of the phantom itself. The **Static Spatial Noise Variance Summary** is the variance across these voxel values.
+
+SNR is calculated by dividing the Signal Summary by the Variance Summary. *SNR = signal summary / sqrt(variance summary / 198 timepoints)*
+
+```{r echo = FALSE}
+knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60_bullet.png'))
+knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60_bullet_fbirn.png'))
+```
+
+## Site Comparisons
+
+Scanner metrics are overlayed on QA data using the fBIRN phantom from thirteen sites. Sites performed monthly QA scans over 3-4 years. Sites are marked by color. For discussion, see:
+
+Kayvanrad, A., et al. (2021). Resting state fMRI scanner instabilities revealed by longitudinal phantom scans in a multi-center study. *Neuroimage*, 237, 118197. doi: 10.1016/j.neuroimage.2021.118197.
+
+```{r echo = FALSE}
+knitr::include_graphics(c(file.path(figdir,'measure_drift_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_driftfit_1-60_2-60_bullet_fbirn_sites.png')))
+knitr::include_graphics(c(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_rdc_1-60_2-60_bullet_fbirn_sites.png')))
+knitr::include_graphics(c(file.path(figdir,'measure_SNR_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_SFNR_1-60_2-60_bullet_fbirn_sites.png')))
+
+
+```

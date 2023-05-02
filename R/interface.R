@@ -79,23 +79,30 @@ hbicqa <- function(datelist='lookup_oneyear',
                                   readfrom = sprintf('QA_Report%s.csv',p$suffix))
     }
 
+
   }
 
 
-  #if (dofigures){
-  #  if (!is.na(qa_measures)){myreport <- qa_measures} else{myreport <- file.path(reportdir,'QA_Report.csv')}
-  #  fBIRN_Figures(report = myreport)
-  #}
-  myreport = list()
-  if(dohtmlreport){
-    for(p in phantoms){
-      if (!is.na(qa_measures[[p$name]])){
-        myreport[[p$name]] <- qa_measures[[p$name]]
-      } else{
-        myreport[[p$name]] <- file.path(reportdir,sprintf('QA_Report%s.csv',p$suffix))
-      }
+
+
+  myreport <- list()
+  longreport <- list()
+
+  for(p in phantoms){
+    if (!is.na(qa_measures[[p$name]])){
+      myreport[[p$name]] <- qa_measures[[p$name]]
+    } else{
+      myreport[[p$name]] <- file.path(reportdir,sprintf('QA_Report%s.csv',p$suffix))
     }
-    fBIRN_html_Report(phantoms, report = myreport, output_dir = reportdir)
+    if (dofigures || dohtmlreport){
+      longreport[[p$name]] <- PROCESS.getTolerances(myreport[[p$name]])
+    }
+  }
+  if (dofigures){
+      FIGURES.fBIRN_Figures(phantoms, report = myreport)
+  }
+  if(dohtmlreport){
+    fBIRN_html_Report(phantoms, report = myreport, longreport = longreport,  output_dir = reportdir)
   }
 }
 
@@ -135,6 +142,7 @@ fBIRN_html_Report <- function(phantoms, system = 'synapse', report = 'import', l
       output_dir = output_dir,
       output_file = sprintf('3T_QA_Report_%s.html',format(Sys.Date(), format = '%Y_%m_%d')),
       params = list(
+        phantoms = phantoms,
         longreport = longreport,
         figdir = path.expand(figdir)
       )
@@ -169,9 +177,14 @@ fBIRN_Report <- function(scan_names = 'all',
 }
 
 #' @export
-fBIRN_Figures <- function(report, reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
+fBIRN_Figures <- function(phantoms, reports, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
   dir.create(file.path(reportdir,figdir),showWarnings = FALSE)
-  longreport <- getTolerances(report)
-  makeFigures(longreport, file.path(reportdir,figdir), dosave)
+  if(longreport == 'calc'){
+    longreport <- list()
+    for(p in phantoms){
+      longreport[[p$name]] <- PROCESS.getTolerances(report[[p$name]])
+    }
+  }
+  FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), dosave)
 
 }
