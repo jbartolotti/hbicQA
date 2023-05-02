@@ -99,7 +99,7 @@ hbicqa <- function(datelist='lookup_oneyear',
     }
   }
   if (dofigures){
-      FIGURES.fBIRN_Figures(phantoms, report = myreport)
+      fBIRN_Figures(phantoms, report = myreport)
   }
   if(dohtmlreport){
     fBIRN_html_Report(phantoms, report = myreport, longreport = longreport,  output_dir = reportdir)
