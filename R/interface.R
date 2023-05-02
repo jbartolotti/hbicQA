@@ -182,7 +182,7 @@ fBIRN_Figures <- function(phantoms, reports, longreport = 'calc', reportdir = '~
   if(longreport == 'calc'){
     longreport <- list()
     for(p in phantoms){
-      longreport[[p$name]] <- PROCESS.getTolerances(report[[p$name]])
+      longreport[[p$name]] <- PROCESS.getTolerances(reports[[p$name]])
     }
   }
   FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), dosave)
