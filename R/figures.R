@@ -17,7 +17,7 @@ FIGURES.makeFigures <- function(phantoms, longreport, figdir,dosave = TRUE){
 
 
 
-FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE){
+FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE){
   # Get the dates of all january1 since 2017
   # Get the dates of all april, july, october1 since july2016 until today
   years <- seq(17,as.integer(format(Sys.Date(), "%y")))
@@ -33,9 +33,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
   #Get list of measures being used, and create one-year back datasets
   for(p in phantoms){
-    current_measures <- unique(c(current_measures, unique(longreport[[p$name]]$measure)))
+    current_measures <- unique(c(current_measures, unique(thisreport[[p$name]]$measure)))
 
-    oneyeardat[[p$name]] <- subset(longreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
+    oneyeardat[[p$name]] <- subset(thisreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
     oneyeardat[[p$name]]$measure_phantom <- paste(oneyeardat[[p$name]]$measure, p$name, sep = '_')
     oneyeardat[[p$name]]$phantom <- p$name
     oneyeardat[[p$name]]$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
@@ -83,7 +83,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
   # Single phantom plots
   mycolors = c('#E89611','blue')
-  index = 0
+
   phantoms$bullet$shade = shadeorange
   phantoms$bullet$line = lineorange
   phantoms$bullet$darkline = darklineorange
@@ -95,7 +95,10 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
   phantoms$fbirn$darkline = darklineblue
   phantoms$bullet$dot_outline_good = dot_outline_good_fbirn
   phantoms$bullet$dot_outline_bad = dot_outline_good_fbirn
+  phantoms$fbirn$dot_outline_good = dot_outline_good_fbirn
+  phantoms$fbirn$dot_outline_bad = dot_outline_good_fbirn
 
+  index = 0
   for(p in phantoms){
     index = index+1
     FIGURES.zscoredotplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
@@ -110,7 +113,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
     for(thismeasure in current_measures){
       #1&2 SD, 60 day smooth, individual figures, post first jandate
-      measuredat <- subset(longreport[[p$name]], measure == thismeasure & scandate_epoch > as.numeric(as.Date(jandates[1],format = '%m%d%y')))
+      measuredat <- subset(thisreport[[p$name]], measure == thismeasure & scandate_epoch > as.numeric(as.Date(jandates[1],format = '%m%d%y')))
       ggplot2::ggplot(measuredat, ggplot2::aes(x = scandate_epoch, y = value)) +
         ggplot2::theme_bw() +
         ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
@@ -139,11 +142,11 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
                subset(oneyeardat$fbirn, scandate_epoch > as.numeric(Sys.Date())-60))
   lastscan <- rbind(oneyeardat_mostrecent$bullet,oneyeardat_mostrecent$fbirn)
   FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, dot_outline_green, dot_outline_red)
-  FIGURES.zscorelineplot(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, mycolors)
+  FIGURES.zscorelineplot(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, mycolors, numcol, numrow)
 
-  longreport$bullet$phantom = 'bullet'
-  longreport$fbirn$phantom = 'fbirn'
-  bothlong = rbind(longreport$bullet, longreport$fbirn)
+  thisreport$bullet$phantom = 'bullet'
+  thisreport$fbirn$phantom = 'fbirn'
+  bothlong = rbind(thisreport$bullet, thisreport$fbirn)
 
   for(thismeasure in current_measures){
     #1&2 SD, 60 day smooth, individual figures, post first jandate
@@ -163,7 +166,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
     if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_bullet_fbirn.png',thismeasure)),width = 6, height = 4, dpi = 200)}
 
-    imfile <- system.file('extdata',sprintf('kayvanrad_2021_%s.png',thismeasure), package = 'hbicQA')
+    imfile <- system.file('extdata',sprintf('kayvanrad_2021_%s_smh.png',thismeasure), package = 'hbicQA')
 
     if (file.exists(imfile)){
         im <- png::readPNG(imfile)
@@ -194,7 +197,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, longreport, suffix, f
 
 oldfigures = function(){
     #1SD, 60&365
-    ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::ggplot(thisreport, ggplot2::aes(x = scandate_epoch, y = value)) +
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
@@ -213,7 +216,7 @@ oldfigures = function(){
 
 
   #1&2 SD, 60
-    ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::ggplot(thisreport, ggplot2::aes(x = scandate_epoch, y = value)) +
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
@@ -225,14 +228,14 @@ oldfigures = function(){
       ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
                   fill = shadeblue, alpha = .5) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = lineblue) +
-      ggplot2::geom_point(data = subset(longreport, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
+      ggplot2::geom_point(data = subset(thisreport, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
       ggplot2::facet_wrap(.~measure,scales = 'free')+
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
 
     if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measures_1-60_2-60%s.png',suffix)),width = figwidth, height = figheight, dpi = 200)}
 
     #1&2 SD, 365
-    ggplot2::ggplot(longreport, ggplot2::aes(x = scandate_epoch, y = value)) +
+    ggplot2::ggplot(thisreport, ggplot2::aes(x = scandate_epoch, y = value)) +
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
@@ -244,7 +247,7 @@ oldfigures = function(){
       ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth365, ymin = value_smooth365-value_smooth_sd365, ymax = value_smooth365+value_smooth_sd365),
                   fill = shadegreen, alpha = .5) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth365),color = linegreen) +
-      ggplot2::geom_point(data = subset(longreport, value < value_smooth365-2*value_smooth_sd365 | value > value_smooth365+2*value_smooth_sd365), color = 'red') +
+      ggplot2::geom_point(data = subset(thisreport, value < value_smooth365-2*value_smooth_sd365 | value > value_smooth365+2*value_smooth_sd365), color = 'red') +
       ggplot2::facet_wrap(.~measure,scales = 'free')+
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
 
