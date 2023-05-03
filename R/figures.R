@@ -141,7 +141,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   dat <- rbind(subset(oneyeardat$bullet, scandate_epoch > as.numeric(Sys.Date())-60),
                subset(oneyeardat$fbirn, scandate_epoch > as.numeric(Sys.Date())-60))
   lastscan <- rbind(oneyeardat_mostrecent$bullet,oneyeardat_mostrecent$fbirn)
-  FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, dot_outline_green, dot_outline_red)
+  FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, dot_outline_green, dot_outline_red, current_measures)
   FIGURES.zscorelineplot(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, mycolors, numcol, numrow)
 
   thisreport$bullet$phantom = 'bullet'
@@ -284,7 +284,7 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
 
 }
 
-FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_names, dosave, num_measures, dot_outline_good, dot_outline_bad){
+FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_names, dosave, num_measures, dot_outline_good, dot_outline_bad, current_measures){
 
 mylabs = rep('',num_measures*2)
 mylabs[seq(1,num_measures*2,2)] = current_measures
