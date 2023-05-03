@@ -287,7 +287,7 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
 FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_names, dosave, num_measures, dot_outline_good, dot_outline_bad, current_measures){
 
 mylabs = rep('',num_measures*2)
-mylabs[seq(1,num_measures*2,2)] = current_measures
+mylabs[seq(1,num_measures*2,2)] = sort(current_measures)
 
 ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alpha = scandate_epoch, shape = phantom)) +
   ggplot2::theme_bw() +
