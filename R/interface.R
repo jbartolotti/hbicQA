@@ -11,6 +11,7 @@ hbicqa <- function(datelist='lookup_oneyear',
                    doreports = FALSE,
                    dofigures = FALSE,
                    dohtmlreport = FALSE,
+                   doservicereport = FALSE,
                    scans_after_epoch = 'all',
                    phantoms = list('bullet' = list(name = 'bullet',
                                                    prefix = 'qc_', postprocess_prefix = 'QC_',
@@ -98,13 +99,19 @@ hbicqa <- function(datelist='lookup_oneyear',
       longreport[[p$name]] <- PROCESS.getTolerances(myreport[[p$name]])
     }
   }
-  if (dofigures){
-      fBIRN_Figures(phantoms, myreport)
+  if (doservicereport){
+    service <- LOAD.service_reports(file.path(basedir,'Reports','service'),'service_reports_categorized.txt')
   }
+  if (dofigures){
+      fBIRN_Figures(phantoms, myreport, service_reports = service)
+  }
+
   if(dohtmlreport){
     fBIRN_html_Report(phantoms, report = myreport, longreport = longreport,  output_dir = reportdir)
   }
 }
+
+
 
 
 #https://ardata-fr.github.io/flextable-book/
@@ -177,7 +184,7 @@ fBIRN_Report <- function(scan_names = 'all',
 }
 
 #' @export
-fBIRN_Figures <- function(phantoms, reports, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
+fBIRN_Figures <- function(phantoms, reports, service_reports = NA, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
   dir.create(file.path(reportdir,figdir),showWarnings = FALSE)
   if(longreport == 'calc'){
     longreport <- list()
@@ -185,6 +192,6 @@ fBIRN_Figures <- function(phantoms, reports, longreport = 'calc', reportdir = '~
       longreport[[p$name]] <- PROCESS.getTolerances(reports[[p$name]])
     }
   }
-  FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), dosave)
+  FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), dosave = dosave, service_reports = service_reports)
 
 }

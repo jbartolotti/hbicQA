@@ -1,5 +1,5 @@
 
-FIGURES.makeFigures <- function(phantoms, longreport, figdir,dosave = TRUE){
+FIGURES.makeFigures <- function(phantoms, longreport, figdir,dosave = TRUE, service_reports = NA){
 
   core_measures = c("percentFluc","drift","driftfit","SNR","SFNR","rdc")
     corereport <- list()
@@ -8,16 +8,16 @@ FIGURES.makeFigures <- function(phantoms, longreport, figdir,dosave = TRUE){
     corereport[[p$name]] <- subset(longreport[[p$name]], measure %in% core_measures)
   }
   #all measures
-  FIGURES.makeFigures_selectedMeasures(phantoms, longreport,'_allmeasures',figdir, dosave = dosave)
+  FIGURES.makeFigures_selectedMeasures(phantoms, longreport,'_allmeasures',figdir, dosave = dosave, service_reports = service_reports)
 
   #core measures
-  FIGURES.makeFigures_selectedMeasures(phantoms, corereport,'_coremeasures',figdir,figwidth = 12, figheight = 6, dosave = dosave)
+  FIGURES.makeFigures_selectedMeasures(phantoms, corereport,'_coremeasures',figdir,figwidth = 12, figheight = 6, dosave = dosave, service_reports = service_reports)
 }
 
 
 
 
-FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE){
+FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, figdir, figwidth = 30, figheight = 'calc', dosave = TRUE, service_reports = NA){
   # Get the dates of all january1 since 2017
   # Get the dates of all april, july, october1 since july2016 until today
   years <- seq(17,as.integer(format(Sys.Date(), "%y")))
@@ -65,6 +65,13 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   dot_outline_good_fbirn <- dot_outline_green #dot_outline_lime
   dot_outline_bad_fbirn <- dot_outline_red #dot_outline_pink
 
+  service_colors <- list(
+    'cooling' = '#3399FF',
+    'coil' = '#CCCC00',
+    'gradient' = '#009933',
+    'spectroscopy' = '#FF0033'
+    )
+
   yextents <- list(
     drift = c(0,4),
     driftfit = c(0,3),
@@ -74,6 +81,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     rdc = c(0,15)
 
     )
+
+
 
   #3/2 ratio for figure size.
   if(figheight == 'calc'){figheight = figwidth*2/3}
@@ -114,13 +123,18 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     for(thismeasure in current_measures){
       #1&2 SD, 60 day smooth, individual figures, post first jandate
       measuredat <- subset(thisreport[[p$name]], measure == thismeasure & scandate_epoch > as.numeric(as.Date(jandates[1],format = '%m%d%y')))
-      ggplot2::ggplot(measuredat, ggplot2::aes(x = scandate_epoch, y = value)) +
+      h <- ggplot2::ggplot(measuredat, ggplot2::aes(x = scandate_epoch, y = value)) +
         ggplot2::theme_bw() +
         ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
         ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
         ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-        ggplot2::labs(x = '',title = sprintf('%s. 60day smooth. Shaded = +/- 1&2 SD',thismeasure), y = thismeasure) +
-        ggplot2::geom_point() +
+        ggplot2::labs(x = '',title = sprintf('%s. 60day smooth. Shaded = +/- 1&2 SD',thismeasure), y = thismeasure)
+
+        if(class(service_reports) = 'data.frame'){
+          h <- h + geom_vline(xintercept = service_reports$epoch[service_reports$category_cooling != ''], color = service_colors$cooling)
+        }
+
+        h <- h + ggplot2::geom_point() +
         ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
                              fill = p$shade, alpha = .25) +
         ggplot2::geom_ribbon(ggplot2::aes(y = value_smooth60, ymin = value_smooth60-value_smooth_sd60, ymax = value_smooth60+value_smooth_sd60),
@@ -128,7 +142,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
         ggplot2::geom_line(ggplot2::aes(y = value_smooth60),color = p$line) +
         ggplot2::geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red') +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30))
-
+        h
       if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_%s.png',thismeasure,p$name)),width = 6, height = 4, dpi = 200)}
 
 

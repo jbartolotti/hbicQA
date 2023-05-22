@@ -32,7 +32,17 @@ LOAD.findNewScans <- function(rawdir, targetdir, phantoms, dayrange = 9999){
   return(returndat)
 }
 
-
+LOAD.service_report <- function(folder, filename){
+  if (is.na(folder)){
+    folder <- '//kumc.edu/data/Research/Hoglund/Brooks_W/Skyra_QC/Reports/service'
+  }
+  if (is.na(filename)){
+    filename <- 'service_reports_categorized.txt'
+  }
+  dat <- read.delim(file.path(folder,filename), sep = '\t')
+  subdat <- subset(dat, (category_spectroscopy != '' | category_gradient != '' | category_coil != '' | category_cooling != '') & note_only != 'note')
+  return(subdat)
+}
 
 
 LOAD.move_qc <- function(date, savedir, rawdir, phantom, overwrite = FALSE){
