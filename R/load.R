@@ -41,6 +41,7 @@ LOAD.service_reports <- function(folder, filename){
   }
   dat <- read.delim(file.path(folder,filename), sep = '\t')
   subdat <- subset(dat, (category_spectroscopy != '' | category_gradient != '' | category_coil != '' | category_cooling != '') & note_only != 'note')
+  subdat$epoch_day <- subdat$epoch / (24*60*60)
   return(subdat)
 }
 
