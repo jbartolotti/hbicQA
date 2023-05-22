@@ -131,7 +131,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
         ggplot2::labs(x = '',title = sprintf('%s. 60day smooth. Shaded = +/- 1&2 SD',thismeasure), y = thismeasure)
 
         if(class(service_reports) == 'data.frame'){
-          h <- h + geom_vline(xintercept = service_reports$epoch[service_reports$category_cooling != ''], color = service_colors$cooling)
+          h <- h + ggplot2::geom_vline(xintercept = service_reports$epoch[service_reports$category_cooling != ''], color = service_colors$cooling)
         }
 
         h <- h + ggplot2::geom_point() +
