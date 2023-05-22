@@ -32,7 +32,7 @@ LOAD.findNewScans <- function(rawdir, targetdir, phantoms, dayrange = 9999){
   return(returndat)
 }
 
-LOAD.service_report <- function(folder, filename){
+LOAD.service_reports <- function(folder, filename){
   if (is.na(folder)){
     folder <- '//kumc.edu/data/Research/Hoglund/Brooks_W/Skyra_QC/Reports/service'
   }
