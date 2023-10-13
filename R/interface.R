@@ -1,3 +1,12 @@
+
+hbicqa(datelist = c(071023, 072023, 072423, 073123),
+       docopyfromraw = FALSE,
+       dofbirn = TRUE,
+       doreports = TRUE,
+       dofigures = TRUE,
+       dohtmlreport = TRUE,
+       doservicereport = TRUE)
+
 #' @export
 hbicqa <- function(datelist='lookup_oneyear',
                    basedir = '~/R-Drive/Brooks_W/Skyra_QC',
