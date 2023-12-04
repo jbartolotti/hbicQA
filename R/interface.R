@@ -110,6 +110,8 @@ hbicqa <- function(datelist='lookup_oneyear',
   }
   if (doservicereport){
     service <- LOAD.service_reports(file.path(basedir,'Reports','service'),'service_reports_categorized.txt')
+  } else {
+    service <- NA
   }
   if (dofigures){
       fBIRN_Figures(phantoms, myreport, service_reports = service)
