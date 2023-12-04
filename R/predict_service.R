@@ -1,3 +1,4 @@
+SERVICE.testfun <- function(){
 load('service_model_dat.rdata')
 
 #separate analyses for cooling service and coil service, one row per each week.
@@ -42,3 +43,5 @@ trControl <- trainControl(method = "cv",
 #- `trControl = trainControl()`: Define the control parameters
 #- `tuneGrid = NULL`: Return a data frame with all the possible combination
 
+
+}
