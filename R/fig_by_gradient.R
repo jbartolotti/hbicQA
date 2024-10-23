@@ -1,3 +1,5 @@
+dummyfunction2 <- function(){
+
 qdir <- '//kumc.edu/data/Research/Hoglund/Bartolotti_J/QA'
 qa <- read.csv(file.path(qdir, 'QA_report.csv'))
 qafb <- read.csv(file.path(qdir, 'QA_report_fbirn.csv'))
@@ -109,5 +111,5 @@ ggplot(qqqed, aes(x = gradient_period, y = value, color = phantom)) +
 ggsave('QA_by_gradient.png', width = 16, height = 8)
 
 
-
+}
 
