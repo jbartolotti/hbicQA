@@ -39,15 +39,24 @@ hbicqa <- function(datelist='lookup_oneyear',
   if (!is.na(fBIRN_temp_dir)){dir.create(fBIRN_temp_dir,showWarnings = FALSE)}
 
   # Get the datelist, a list of MMDDYY qc scans to process.
-  if (datelist == 'lookup'){
-     datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms)
-  } else if(datelist == 'lookup_oneyear'){
-    datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms, dayrange = 365)
+  # LIST
+  if (typeof(datelist) == 'list'){
+  datelist_list <- datelist
+  #CHARACTER
   } else if(typeof(datelist)=='character'){
-     error("datelist must be either 'lookup', 'lookup_oneyear' a number/vector with format MMDDYY (to apply to all phantoms), or a list with a number/vector for each phantom")
-  } else if (typeof(datelist) == 'list'){
-    datelist_list <- datelist
-  } else {
+    if (datelist == 'lookup'){
+      datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms)
+    } else if(datelist == 'lookup_oneyear'){
+      datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms, dayrange = 365)
+    } else if(all(!is.na(suppressWarnings(as.numeric(datelist))))){
+      #it's all numbers as a string
+      datelist_list <- list()
+      for(p in phantoms){ datelist_list[[p$name]] <- as.numeric(datelist)}
+    } else {
+      stop("datelist must be either 'lookup', 'lookup_oneyear' a character/number/vector with format MMDDYY (to apply to all phantoms), or a list with a number/vector for each phantom")
+    }
+  # NUMERIC
+  } else if(typeof(datelist)=='numeric')
     datelist_list <- list()
     for(p in phantoms){ datelist_list[[p$name]] <- datelist}
   }
