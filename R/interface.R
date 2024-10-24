@@ -56,7 +56,7 @@ hbicqa <- function(datelist='lookup_oneyear',
       stop("datelist must be either 'lookup', 'lookup_oneyear' a character/number/vector with format MMDDYY (to apply to all phantoms), or a list with a number/vector for each phantom")
     }
   # NUMERIC
-  } else if(typeof(datelist)=='numeric')
+  } else if(typeof(datelist)=='numeric'){
     datelist_list <- list()
     for(p in phantoms){ datelist_list[[p$name]] <- datelist}
   }
