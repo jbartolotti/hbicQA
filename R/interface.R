@@ -64,6 +64,7 @@ hbicqa <- function(datelist='lookup_oneyear',
 
   for(p in phantoms){
     for(date in datelist_list[[p$name]]){
+      if(!is.na(date)){
       #convert numbers to strings, 50386 to '050386'
       if(typeof(date)=='double'){date <- sprintf('%06d',date)}
 
@@ -91,7 +92,8 @@ hbicqa <- function(datelist='lookup_oneyear',
 
       #Monthly ADNI Gradient Nonlinearity goes here
     }
-    message(sprintf('fBIRN done for %s, phantom: %s',p$name, paste(datelist_list[[p$name]],collapse = ' ')))
+    }
+    message(sprintf('fBIRN done for %s, phantom: %s', paste(datelist_list[[p$name]],collapse = ' '),p$name))
 
     qa_measures[[p$name]]<- NA
     if (doreports){

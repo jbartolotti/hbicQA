@@ -96,7 +96,7 @@ LOAD.readQAMeasures <- function(basedir, analysisdir, measures, phantom, read_qa
                         fixfoldernames = fixfoldernames)
   #If all measures of interest are in the already completed report,
   #then only read directories that don't already exist in the already completed report
-  if(!is.na(read_qa_measures) && all(measures %in% colnames(read_qa_measures))){
+  if( typeof(read_qa_measures) == 'list'  && all(measures %in% colnames(read_qa_measures))){
     already_read <- read_qa_measures$folder
     qa_dirs <- qa_dirs[!(qa_dirs %in% already_read)]
   }
