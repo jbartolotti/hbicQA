@@ -29,6 +29,13 @@ longreport <- params$longreport
 figdir <- params$figdir
 
 these_measures <- c('drift','driftfit','percentFluc','rdc','SFNR','SNR')
+measure_pretty <- list()
+measure_pretty$SNR <- 'SNR'
+measure_pretty$SFNR <- 'SFNR'
+measure_pretty$percentFluc <- '% Fluct.'
+measure_pretty$drift <- 'Drift'
+measure_pretty$driftfit <- 'Drift(Fit)'
+measure_pretty$rdc <- 'RDC'
 
 lastscan <- list()
 lastscandate_str <- list()
@@ -37,6 +44,7 @@ passtext <- list()
 oneyeardat <- list()
 
 for(p in phantoms){ 
+  if(p$report$lastscan){
 lastscan[[p$name]] <- longreport[[p$name]][longreport[[p$name]]$scandate_epoch == max(longreport[[p$name]]$scandate_epoch,na.rm = TRUE),]
 lastscan[[p$name]] <- lastscan[[p$name]][!is.na(lastscan[[p$name]]$scandate_epoch),]
 lastscandate_str[[p$name]] <- format(as.Date(unique(lastscan[[p$name]]$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
@@ -56,83 +64,130 @@ oneyeardat[[p$name]] <- subset(longreport[[p$name]], scandate_epoch > as.numeric
   oneyeardat[[p$name]]$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
     (oneyeardat[[p$name]]$value[x] - mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)) / sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)
     }))
+  }
 }
+
+lastscan_values <- data.frame(measure = these_measures)
+for(p in phantoms){ 
+  if(p$report$lastscan){
+    lastscan_values[,p$name] <- lastscan[[p$name]]$value[
+        unlist(lapply(these_measures, function(x){
+          which(lastscan[[p$name]]$measure == x)}
+          ))]
+    this_meancol_name <- paste('mean',p$name,sep = '_')
+    this_sdcol_name <- paste('sd',p$name,sep = '_')
+    lastscan_values[,this_meancol_name] <- unlist(lapply(these_measures, function(x){
+  mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == x], na.rm = TRUE)
+    }
+  ))
+    lastscan_values[,this_sdcol_name] <- unlist(lapply(these_measures, function(x){
+  sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == x], na.rm = TRUE)
+    }
+  ))
+    lastscan_values[,paste('mean_2sd',p$name, sep = '_')] <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
+  sprintf('%.2f [%.2f, %.2f]',lastscan_values[[this_meancol_name]][x],lastscan_values[[this_meancol_name]][x]-2*lastscan_values[[this_sdcol_name]][x], lastscan_values[[this_meancol_name]][x]+2*lastscan_values[[this_sdcol_name]][x])
+    }
+    ))
+    
+  }
+}  
+
+myheader <- as.character()
+tablechar <- list()
+for(p in phantoms){ 
+  if(p$report$lastscan){
+    tablechar[[p$name]]$numchar <-nchar(lastscan_values[[p$name]])  
+    tablechar[[p$name]]$numchar_msd <- nchar(lastscan_values[[paste('mean_2sd',p$name,sep='_')]])  
+    
+    tablechar[[p$name]]$maxchar <- max(tablechar[[p$name]]$numchar)
+    tablechar[[p$name]]$maxchar_msd <- max(tablechar[[p$name]]$numchar_msd)
+    
+
+  this_spaced_name <- paste(p$name,'spaced',sep='_')
+  this_spaced_msd_name <- paste('mean_2sd',p$name,'spaced',sep='_')
+  lastscan_values[,this_spaced_name] <- unlist(lapply(lastscan_values[[p$name]], function(x){
+  paste(c(x,rep('&nbsp;',(tablechar[[p$name]]$maxchar+4)-nchar(x))),collapse='')
+  }
+  ))
+  lastscan_values[,this_spaced_msd_name] <- unlist(lapply(lastscan_values[,paste('mean_2sd',p$name, sep = '_')], function(x){
+  paste(c(x,rep('&nbsp;',(tablechar[[p$name]]$maxchar_msd+4)-nchar(x))),collapse='')
+  }
+  ))
   
-lastscan_values <- data.frame(
-  measure = these_measures,
-  LastScan_bullet = lastscan$bullet$value[
-    unlist(lapply(these_measures, function(x){
-      which(lastscan$bullet$measure == x)}
-      ))
-    ],
-  LastScan_fbirn = lastscan$fbirn$value[
-    unlist(lapply(these_measures, function(x){
-      which(lastscan$fbirn$measure == x)}
-      ))
-    ]
-)
-
-lastscan_values$mean_bullet <- unlist(lapply(these_measures, function(x){
-  mean(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
+  myheader <- paste0(myheader, p$pretty_name, paste0(rep('&nbsp;',(tablechar[[p$name]]$maxchar+4) -nchar(p$pretty_name)), collapse = ''),collapse = '')
+                     
+  myheader <- paste0(myheader, '1Yr Mean [2SD]', paste0(rep('&nbsp;',(tablechar[[p$name]]$maxchar_msd+4) - nchar('1Yr Mean [2SD]')), collapse = ''), collapse = '' )
   }
-))
+}
 
-lastscan_values$sd_bullet <- unlist(lapply(these_measures, function(x){
-  sd(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
-  }
-))
 
-lastscan_values$Mean_2SD_bullet <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
-  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_bullet[x],lastscan_values$mean_bullet[x]-2*lastscan_values$sd_bullet[x], lastscan_values$mean_bullet[x]+2*lastscan_values$sd_bullet[x])
-  }
-))
+#lastscan_values <- data.frame(
+#  measure = these_measures,
+#  LastScan_bullet = lastscan$bullet$value[
+#    unlist(lapply(these_measures, function(x){
+#      which(lastscan$bullet$measure == x)}
+#      ))
+#    ],
+#  LastScan_fbirn = lastscan$fbirn$value[
+#    unlist(lapply(these_measures, function(x){
+#      which(lastscan$fbirn$measure == x)}
+#      ))
+#    ]
+#)
+#
+# lastscan_values$mean_bullet <- unlist(lapply(these_measures, function(x){
+#  mean(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
+#  }
+#))
+#
+#lastscan_values$sd_bullet <- unlist(lapply(these_measures, function(x){
+#  sd(oneyeardat$bullet$value[oneyeardat$bullet$measure == x], na.rm = TRUE)
+#  }
+#))
+#
+#lastscan_values$Mean_2SD_bullet <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
+#  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_bullet[x],lastscan_values$mean_bullet[x]-2*lastscan_values$sd_bullet[x], lastscan_values$mean_bullet[x]+2*lastscan_values$sd_bullet[x])
+#  }
+#))
 
-lastscan_values$mean_fbirn <- unlist(lapply(these_measures, function(x){
-  mean(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
-  }
-))
-
-lastscan_values$sd_fbirn <- unlist(lapply(these_measures, function(x){
-  sd(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
-  }
-))
-
-lastscan_values$Mean_2SD_fbirn <- unlist(lapply(1:dim(lastscan_values)[1], function(x){
-  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_fbirn[x],lastscan_values$mean_fbirn[x]-2*lastscan_values$sd_fbirn[x], lastscan_values$mean_fbirn[x]+2*lastscan_values$sd_fbirn[x])
-  }
-))
+#lastscan_values$mean_fbirn <- unlist(lapply(these_measures, function(x){
+#  mean(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
+#  }
+#))
+#
+#lastscan_values$sd_fbirn <- unlist(lapply(these_measures, function(x){
+#  sd(oneyeardat$fbirn$value[oneyeardat$fbirn$measure == x], na.rm = TRUE)
+#  }
+#))
+#
+#lastscan_values$Mean_2SD_fbirn <- unlist(lapply(1:dim(lastscan_values)[1], #function(x){
+#  sprintf('%.2f [%.2f, %.2f]',lastscan_values$mean_fbirn[x],lastscan_values$mean_fbirn[x]-2*lastscan_values$sd_fbirn[x], lastscan_values$mean_fbirn[x]+2*lastscan_values$sd_fbirn[x])
+#  }
+#))
 
 #Table for most recent scan core values
-measure_pretty <- list()
-measure_pretty$SNR <- 'SNR'
-measure_pretty$SFNR <- 'SFNR'
-measure_pretty$percentFluc <- '% Fluct.'
-measure_pretty$drift <- 'Drift'
-measure_pretty$driftfit <- 'Drift(Fit)'
-measure_pretty$rdc <- 'RDC'
 
+#numchar_bullet <- nchar(lastscan_values$LastScan_bullet)  
+#numchar_fbirn <- nchar(lastscan_values$LastScan_fbirn)  
+#numchar_bullet_msd <- nchar(lastscan_values$Mean_2SD_bullet)  
+#
+#maxnumchar_bullet <- max(numchar_bullet)
+#maxnumchar_fbirn <- max(numchar_fbirn)
+#maxnumchar_bullet_msd <- max(numchar_bullet_msd)
 
-numchar_bullet <- nchar(lastscan_values$LastScan_bullet)  
-numchar_fbirn <- nchar(lastscan_values$LastScan_fbirn)  
-numchar_bullet_msd <- nchar(lastscan_values$Mean_2SD_bullet)  
-
-maxnumchar_bullet <- max(numchar_bullet)
-maxnumchar_fbirn <- max(numchar_fbirn)
-maxnumchar_bullet_msd <- max(numchar_bullet_msd)
-
-lastscan_values$LastScan_bullet_spaced <- unlist(lapply(lastscan_values$LastScan_bullet, function(x){
-  paste(c(x,rep('&nbsp;',(maxnumchar_bullet+4)-nchar(x))),collapse='')
-  }
-))
-lastscan_values$Mean_2SD_bullet_spaced <- unlist(lapply(lastscan_values$Mean_2SD_bullet, function(x){
-  paste(c(x,rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(x))),collapse='')
-  }
-))
-
-lastscan_values$LastScan_fbirn_spaced <- unlist(lapply(lastscan_values$LastScan_fbirn, function(x){
-  paste(c(x,rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(x))),collapse='')
-  }
-))
+#lastscan_values$LastScan_bullet_spaced <- unlist(lapply(lastscan_values$LastScan_bullet, function(x){
+#  paste(c(x,rep('&nbsp;',(maxnumchar_bullet+4)-nchar(x))),collapse='')
+#  }
+#))
+#lastscan_values$Mean_2SD_bullet_spaced <- unlist(lapply(lastscan_values$Mean_2SD_bullet, function(x){
+#  paste(c(x,rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(x))),collapse='')
+#  }
+#))
+#
+#lastscan_values$LastScan_fbirn_spaced <- unlist(lapply(lastscan_values$LastScan_fbirn, function(x){
+#  paste(c(x,rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(x))),collapse='')
+#  }
+#))
 
 row.names(lastscan_values) <- unlist(measure_pretty[these_measures])
 rnumchar <- nchar(row.names(lastscan_values))
@@ -142,33 +197,56 @@ lastscan_values$measure_spaced <- unlist(lapply(row.names(lastscan_values), func
   }
 ))
 
-lastscan_values$toprint <- paste(lastscan_values$measure_spaced,
-                                 lastscan_values$LastScan_bullet_spaced, lastscan_values$Mean_2SD_bullet_spaced,
-                                 lastscan_values$LastScan_fbirn_spaced, lastscan_values$Mean_2SD_fbirn,
-                                 sep = '')
-measure_head <- 'Measure'
-lastscan_bullet_head <- 'Bullet'
-msd_bullet_head <- '1Yr Mean [2SD]'
-lastscan_fbirn_head <- 'fBIRN'
-msd_fbirn_head <- '1Yr Mean [2SD]'
+printcols <- colnames(lastscan_values)[grep('spaced',colnames(lastscan_values) )]
+printorder <- c(printcols[grepl('measure',printcols)],printcols[!grepl('measure',printcols)])
+lastscan_values$toprint <- do.call(paste0,lastscan_values[,printorder])
 
-header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)),
-                  lastscan_bullet_head,
-                  rep('&nbsp;',(maxnumchar_bullet+4)-nchar(lastscan_bullet_head)),
-                  msd_bullet_head,
-                  rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(msd_bullet_head)),
-                  lastscan_fbirn_head,
-                  rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(lastscan_fbirn_head)),
-                  msd_fbirn_head
-                  ),collapse = '')
+
+#lastscan_values$toprint <- paste(lastscan_values$measure_spaced,
+#                                 lastscan_values$LastScan_bullet_spaced, lastscan_values$Mean_2SD_bullet_spaced,
+#                                 lastscan_values$LastScan_fbirn_spaced, lastscan_values$Mean_2SD_fbirn,
+#                                 sep = '')
+#measure_head <- 'Measure'
+header <- paste0('Measure', paste0(rep('&nbsp;',(maxrnumchar+4)-nchar('Measure')),collapse=''), myheader, collapse = '')
+#lastscan_bullet_head <- 'Bullet'
+#msd_bullet_head <- '1Yr Mean [2SD]'
+#lastscan_fbirn_head <- 'fBIRN'
+#msd_fbirn_head <- '1Yr Mean [2SD]'
+
+
+
+#header <- paste(c(measure_head, rep('&nbsp;',(maxrnumchar+4)-nchar(measure_head)),
+#                  lastscan_bullet_head,
+#                  rep('&nbsp;',(maxnumchar_bullet+4)-nchar(lastscan_bullet_head)),
+#                  msd_bullet_head,
+#                  rep('&nbsp;',(maxnumchar_bullet_msd+4)-nchar(msd_bullet_head)),
+#                  lastscan_fbirn_head,
+#                  rep('&nbsp;',(maxnumchar_fbirn+4)-nchar(lastscan_fbirn_head)),
+#                  msd_fbirn_head
+#                  ),collapse = '')
+
+qa_summary_text <- as.character()
+for(p in phantoms){
+  if(p$report$lastscan){
+   
+    qa_summary_text <- paste0(qa_summary_text,sprintf('QA metrics from last %s-phantom scan on %s. <span style=color:%s>%s </span><br>',p$pretty_name, lastscandate_str[[p$name]], passcolor[[p$name]], passtext[[p$name]]), collapse = '')
+    
+     
+  }
+}
+
+#QA metrics from last bullet-phantom scan on `r lastscandate_str$bullet`. <span style=color:`r passcolor$bullet`>`r passtext$bullet`</span>
+#
+#QA metrics from last fbirn-phantom scan on `r lastscandate_str$fbirn`. <span style=color:`r passcolor$fbirn`>`r passtext$fbirn`</span>
+
+
 ```
 
 
 # fBIRN
 ## Last Scan (`r lastscandate_str`)
-QA metrics from last bullet-phantom scan on `r lastscandate_str$bullet`. <span style=color:`r passcolor$bullet`>`r passtext$bullet`</span>
 
-QA metrics from last fbirn-phantom scan on `r lastscandate_str$fbirn`. <span style=color:`r passcolor$fbirn`>`r passtext$fbirn`</span>
+`r qa_summary_text`
 
 <tt>
 
@@ -182,21 +260,54 @@ QA metrics from last fbirn-phantom scan on `r lastscandate_str$fbirn`. <span sty
 
 
 ## 60 day trend  
-Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan. Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
+Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan (Green = within 2SD, Red = outside 2SD). Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures_bullet_fbirn.png'))
+if(phantoms$fbirn$report$fig60){
+  if(phantoms$bullet$report$fig60){
+    #both
+      knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures_bullet_fbirn.png'))
+  } else {
+    #just fbirn  
+      knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures_fbirn.png'))
+    }
+} else {
+  if(phantoms$bullet$report$fig60){
+    # just bullet
+      knitr::include_graphics(file.path(figdir,'60day_dotplot_sd365_coremeasures_bullet.png'))
+  }
+  #none
+}
 ```
 
 
 ```{r echo = FALSE}
+if(phantoms$fbirn$report$fig60){
+  if(phantoms$bullet$report$fig60){
+    #both
 knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bullet_fbirn.png'))
+  } else {
+    #just fbirn  
+knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_fbirn.png'))
+    }
+} else {
+  if(phantoms$bullet$report$fig60){
+    # just bullet
+knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bullet.png'))
+  }
+  #none
+}
+
+#Historical QA metrics. The first image in each section charts values from scans using the bullet phantom since 2017. The light orange line represents 60-day smoothing of QA metrics. Shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are individual QA scans. Red dots were outside +/- 2SDs.
+
+#The second image in each section charts values from scans using the bullet phantom and the fBIRN phantom since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red Xs indicate scans outside +/- 2SDs.
+
+
 ```
  
 ## Historical Data
-Historical QA metrics. The first image in each section charts values from scans using the bullet phantom since 2017. The light orange line represents 60-day smoothing of QA metrics. Shaded regions represent +/- 1 & 2 SDs of the metric, within a 60 day window. Black and Red dots are individual QA scans. Red dots were outside +/- 2SDs.
 
-The second image in each section charts values from scans using the bullet phantom and the fBIRN phantom since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red Xs indicate scans outside +/- 2SDs.
+Historical QA metrics from scans using the bullet phantom and the fBIRN phantom since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red Xs indicate scans outside +/- 2SDs ().
 
 
 The **Central ROI**, a 21 × 21 ROI centered in the middle of the image is used to calculate all QA metrics below.

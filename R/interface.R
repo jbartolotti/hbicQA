@@ -25,12 +25,14 @@ hbicqa <- function(datelist='lookup_oneyear',
                    dohtmlreport = FALSE,
                    doservicereport = FALSE,
                    scans_after_epoch = 'all',
-                   phantoms = list('bullet' = list(name = 'bullet',
+                   phantoms = list('bullet' = list(name = 'bullet',pretty_name = 'Bullet',
                                                    prefix = 'qc_', postprocess_prefix = 'QC_',
-                                                   suffix = '', postprocess_suffix = ''),
-                                   'fbirn' = list(name = 'fbirn',
+                                                   suffix = '', postprocess_suffix = '',
+                                                   report = list(lastscan = FALSE, fig60 = FALSE)),
+                                   'fbirn' = list(name = 'fbirn',pretty_name = 'fBIRN',
                                                   prefix = 'qc_', postprocess_prefix = 'QC_',
-                                                  suffix = '_fbirn', postprocess_suffix = '_fbirn'))
+                                                  suffix = '_fbirn', postprocess_suffix = '_fbirn',
+                                                  report = list(lastscan = TRUE, fig60 = TRUE)))
 
                    ){
   # checks for availability of system functions, i.e. afni and bxh_xcede

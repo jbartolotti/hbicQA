@@ -35,6 +35,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   for(p in phantoms){
     current_measures <- unique(c(current_measures, unique(thisreport[[p$name]]$measure)))
 
+    isoneyear <- thisreport[[p$name]]$scandate_epoch > as.numeric(Sys.Date())-365
+    if(any(isoneyear)){
+
     oneyeardat[[p$name]] <- subset(thisreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
     oneyeardat[[p$name]]$measure_phantom <- paste(oneyeardat[[p$name]]$measure, p$name, sep = '_')
     oneyeardat[[p$name]]$phantom <- p$name
@@ -42,6 +45,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       (oneyeardat[[p$name]]$value[x] - mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)) / sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)
     }))
     oneyeardat_mostrecent[[p$name]] <- oneyeardat[[p$name]][oneyeardat[[p$name]]$scandate_epoch == max(oneyeardat[[p$name]]$scandate_epoch, na.rm = TRUE),]
+    } else {
+      oneyeardat[[p$name]] <- NA
+    }
   }
 
   #Figure settings
@@ -93,32 +99,37 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   # Single phantom plots
   mycolors = c('#E89611','blue')
 
-  phantoms$bullet$shade = shadeorange
-  phantoms$bullet$line = lineorange
-  phantoms$bullet$darkline = darklineorange
-  phantoms$bullet$dot_outline_good = dot_outline_good_bullet
-  phantoms$bullet$dot_outline_bad = dot_outline_good_bullet
-
+  if(any('bullet' %in% names(phantoms))){
+    phantoms$bullet$shade = shadeorange
+    phantoms$bullet$line = lineorange
+    phantoms$bullet$darkline = darklineorange
+    phantoms$bullet$dot_outline_good = dot_outline_good_bullet
+    phantoms$bullet$dot_outline_bad = dot_outline_good_bullet
+  }
+  if(any('fbirn' %in% names(phantoms))){
   phantoms$fbirn$shade = shadeblue
   phantoms$fbirn$line = lineblue
   phantoms$fbirn$darkline = darklineblue
-  phantoms$bullet$dot_outline_good = dot_outline_good_fbirn
-  phantoms$bullet$dot_outline_bad = dot_outline_good_fbirn
   phantoms$fbirn$dot_outline_good = dot_outline_good_fbirn
   phantoms$fbirn$dot_outline_bad = dot_outline_good_fbirn
+  }
 
   index = 0
   for(p in phantoms){
     index = index+1
-    FIGURES.zscoredotplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
-                          oneyeardat_mostrecent[[p$name]],
-                          figdir, suffix, p$name, dosave, num_measures, p$dot_outline_good, p$dot_outline_bad
-                          )
-    FIGURES.zscorelineplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
-                          oneyeardat_mostrecent[[p$name]],
-                          figdir, suffix, p$name, dosave, num_measures, mycolors[index], numcol, numrow
-    )
+    if(is.data.frame(oneyeardat[[p$name]])){
+      FIGURES.zscoredotplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
+                            oneyeardat_mostrecent[[p$name]],
+                            figdir, suffix, p$name, dosave, num_measures, p$dot_outline_good, p$dot_outline_bad
+                            )
+      FIGURES.zscorelineplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
+                            oneyeardat_mostrecent[[p$name]],
+                            figdir, suffix, p$name, dosave, num_measures, mycolors[index], numcol, numrow
+      )
+    }
+  }
 
+  for(p in phantoms){
 
     for(thismeasure in current_measures){
       #1&2 SD, 60 day smooth, individual figures, post first jandate
@@ -158,11 +169,16 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   }
 
   # Combined phantom plots
+  if(all(c('bullet','fbirn') %in% names(phantoms))){
+
+    if(phantoms$bullet$report$fig60 && phantoms$fbirn$report$fig60){
   dat <- rbind(subset(oneyeardat$bullet, scandate_epoch > as.numeric(Sys.Date())-60),
                subset(oneyeardat$fbirn, scandate_epoch > as.numeric(Sys.Date())-60))
   lastscan <- rbind(oneyeardat_mostrecent$bullet,oneyeardat_mostrecent$fbirn)
   FIGURES.zscoredotplot_both(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, dot_outline_green, dot_outline_red, current_measures)
   FIGURES.zscorelineplot(dat, lastscan, figdir, suffix, c('bullet','fbirn'), dosave, num_measures, mycolors, numcol, numrow)
+
+    }
 
   thisreport$bullet$phantom = 'bullet'
   thisreport$fbirn$phantom = 'fbirn'
@@ -209,7 +225,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_bullet_fbirn_sites.png',thismeasure)),width = 6, height = 4, dpi = 200)}
     }
   }
-
+  }
 
 
 
@@ -347,7 +363,7 @@ ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_smooth60, alph
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
   ggplot2::geom_point(size = 1) + #color = 'black', size = 1) +
-  ggplot2::geom_line(size = 1) + #color = 'black', size = 1) +
+  ggplot2::geom_line(linewidth = 1) + #color = 'black', size = 1) +
   ggplot2::geom_point(data = lastscan, ggplot2::aes(fill = phantom),
                        color = 'black', size = 2, shape = 21, stroke = 1 ) +
   ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
