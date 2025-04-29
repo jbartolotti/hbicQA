@@ -139,7 +139,7 @@ hbicqa <- function(datelist='lookup_2025',
   longreport <- list()
 
   for(p in phantoms){
-    if (!is.na(qa_measures[[p$name]])){
+    if (length(qa_measures[[p$name]] == 1) & !is.na(qa_measures[[p$name]])){
       myreport[[p$name]] <- qa_measures[[p$name]]
     } else{
       myreport[[p$name]] <- file.path(reportdir,sprintf('QA_Report%s.csv',p$suffix))
