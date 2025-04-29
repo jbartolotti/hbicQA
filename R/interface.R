@@ -11,14 +11,18 @@
 #hbicqa(datelist = c(121123), docopyfromraw = FALSE, dofbirn = TRUE, doreports = TRUE, dofigures = TRUE, dohtmlreport = TRUE, doservicereport = FALSE)
 
 #' @export
-hbicqa <- function(datelist='lookup_oneyear',
+hbicqa_newscans <- function()
+
+#' @export
+hbicqa <- function(datelist='lookup_2025',
                    basedir = '~/R-Drive/Brooks_W/Skyra_QC',
                    imagedir = 'Images',
                    analysisdir = 'Analysis',
                    rawdir = '/xnatdata/arch/9999/arc001',
                    reportdir = '~/R-Drive/Bartolotti_J/QA',
                    fBIRN_temp_dir = NA,
-                   docopyfromraw = TRUE,
+                   docopyfromraw = FALSE,
+                   docopyfromraw_rxnat = TRUE,
                    dofbirn = FALSE,
                    doreports = FALSE,
                    dofigures = FALSE,
@@ -50,6 +54,14 @@ hbicqa <- function(datelist='lookup_oneyear',
       datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms)
     } else if(datelist == 'lookup_oneyear'){
       datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms, dayrange = 365)
+    } else if(datelist == 'lookup_2025'){
+      returndat <- LOAD.findNewScans_RXNAT('~/.Renviron_xnat', file.path(basedir,imagedir), file.path(reportdir, 'QA_report_fbirn.csv'),c('022625')) #blacklist 2/26/25
+      datelist_list <- list()
+      datelist_list$fbirn <- returndat$get_xnat
+      datelist_list$bullet <- NA
+      report_datelist_list <- list()
+      report_datelist_list$fbirn <- returndat$get_report
+      report_datelist_list$bullet <- NA
     } else if(all(!is.na(suppressWarnings(as.numeric(datelist))))){
       #it's all numbers as a string
       datelist_list <- list()
@@ -64,6 +76,7 @@ hbicqa <- function(datelist='lookup_oneyear',
   }
   qa_measures <- list()
 
+  xnat_conn <- NA
   for(p in phantoms){
     for(date in datelist_list[[p$name]]){
       if(!is.na(date)){
@@ -75,10 +88,21 @@ hbicqa <- function(datelist='lookup_oneyear',
         move_qc_notes <- LOAD.move_qc(date, file.path(basedir,imagedir), rawdir, p)
         message(move_qc_notes$message)
       }
+
+      if(docopyfromraw_rxnat){
+          conn_notes <- LOAD.move_qc_rxnat(date, file.path(basedir,imagedir), '~/.Renviron_xnat', p,conn = xnat_conn)
+          xnat_conn <- conn_notes$conn
+          message(conn_notes$notes$message)
+      }
       #visual inspection function goes here
+      }
+    }
 
-
-      if(dofbirn){
+    reportdates <- datelist_list[[p$name]]
+    if(exists('report_datelist_list')){reportdates <- report_datelist_list[[p$name]]}
+    for(date in reportdates){
+      if(!is.na(date)){
+        if(dofbirn){
         #find qc series 4 for fbirn processing
         fBIRN_scan4_input <- file.path(basedir,imagedir,sprintf('%s%s%s',p$prefix, date, p$suffix),'SCANS','4','DICOM')
         if(!is.na(fBIRN_temp_dir)){

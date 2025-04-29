@@ -8,7 +8,8 @@ dates <- list(baseline = list(start = '2000-01-01', end = '2021-12-31'),
               gradient_first = list(start = '2022-01-01', end = '2022-07-31'),
               graderror = list(start = '2022-08-01', end = '2022-08-18'),
               gradient_second = list(start = '2022-08-19', end = '2023-11-24'),
-              gradient_third = list(start = '2023-11-25', end = '2023-12-12')
+              gradient_third = list(start = '2023-11-25', end = '2025-03-19'),
+              gradient_fourth = list(start = '2025-03-20', end = Sys.Date())
               )
 dates$baseline$start_epoch <- as.numeric(as.Date(dates$baseline$start))
 dates$baseline$end_epoch <- as.numeric(as.Date(dates$baseline$end))
@@ -20,6 +21,8 @@ dates$gradient_second$start_epoch <- as.numeric(as.Date(dates$gradient_second$st
 dates$gradient_second$end_epoch <- as.numeric(as.Date(dates$gradient_second$end))
 dates$gradient_third$start_epoch <- as.numeric(as.Date(dates$gradient_third$start))
 dates$gradient_third$end_epoch <- as.numeric(as.Date(dates$gradient_third$end))
+dates$gradient_fourth$start_epoch <- as.numeric(as.Date(dates$gradient_fourth$start))
+dates$gradient_fourth$end_epoch <- as.numeric(as.Date(dates$gradient_fourth$end))
 
 
 qa_baseline <- subset(qa, scandate_epoch >= dates$baseline$start_epoch & scandate_epoch <= dates$baseline$end_epoch)
@@ -27,12 +30,14 @@ qa_gradient_first <- subset(qa, scandate_epoch >= dates$gradient_first$start_epo
 qa_graderror <- subset(qa, scandate_epoch >= dates$graderror$start_epoch & scandate_epoch <= dates$graderror$end_epoch)
 qa_gradient_second <- subset(qa, scandate_epoch >= dates$gradient_second$start_epoch & scandate_epoch <= dates$gradient_second$end_epoch)
 qa_gradient_third <- subset(qa, scandate_epoch >= dates$gradient_third$start_epoch & scandate_epoch <= dates$gradient_third$end_epoch)
+qa_gradient_fourth <- subset(qa, scandate_epoch >= dates$gradient_fourth$start_epoch & scandate_epoch <= dates$gradient_fourth$end_epoch)
 
 qafb_baseline <- subset(qafb, scandate_epoch >= dates$baseline$start_epoch & scandate_epoch <= dates$baseline$end_epoch)
 qafb_gradient_first <- subset(qafb, scandate_epoch >= dates$gradient_first$start_epoch & scandate_epoch <= dates$gradient_first$end_epoch)
 qafb_graderror <- subset(qafb, scandate_epoch >= dates$graderror$start_epoch & scandate_epoch <= dates$graderror$end_epoch)
 qafb_gradient_second <- subset(qafb, scandate_epoch >= dates$gradient_second$start_epoch & scandate_epoch <= dates$gradient_second$end_epoch)
 qafb_gradient_third <- subset(qafb, scandate_epoch >= dates$gradient_third$start_epoch & scandate_epoch <= dates$gradient_third$end_epoch)
+qafb_gradient_fourth <- subset(qafb, scandate_epoch >= dates$gradient_fourth$start_epoch & scandate_epoch <= dates$gradient_fourth$end_epoch)
 
 
 qa_baseline$period <- 'baseline'
@@ -49,8 +54,9 @@ qafb_gradient_first$period <- 'grad1'
 qafb_graderror$period <- 'grad1_error'
 qafb_gradient_second$period <- 'grad2'
 qafb_gradient_third$period <- 'grad3'
+qafb_gradient_fourth$period <- 'grad4'
 
-qafbl <- rbind(qafb_baseline, qafb_gradient_first, qafb_graderror, qafb_gradient_second, qafb_gradient_third)
+qafbl <- rbind(qafb_baseline, qafb_gradient_first, qafb_graderror, qafb_gradient_second, qafb_gradient_third, qafb_gradient_fourth)
 qafbl$phantom <- 'fbirn'
 
 qq <- rbind(qal,qafbl)
@@ -106,9 +112,9 @@ ggplot(qqqed, aes(x = gradient_period, y = value, color = phantom)) +
   #  stat_summary(fun.y = 'mean', geom = 'point', size = 1.5) +
 #  stat_summary(data = subset(qqqed, gradient_period %in% c('grad1','grad2')), fun.data = 'mean_cl_normal', geom = 'errorbar', width = .3) +
   facet_wrap(.~measure, scales = 'free', ncol = 3) +
-  labs(title = 'Gradient 1: 2017-1-1 to 2022-07-31\nGradient1_Error: 2022-08-01 to 2022-08-29\nGradient 2: 2022-08-29 to 2023-11-24\nGradient 3: 2023-12-12 to present')
+  labs(title = 'Gradient 1: 2017-1-1 to 2022-07-31\nGradient1_Error: 2022-08-01 to 2022-08-29\nGradient 2: 2022-08-29 to 2023-11-24\nGradient 3: 2023-12-12 to 2025-03-19\nGradient 4: 2025-03-20 to present')
 
-ggsave('QA_by_gradient.png', width = 16, height = 8)
+ggsave('QA_by_gradient_2025-03-27.png', width = 16, height = 8)
 
 
 }

@@ -170,3 +170,192 @@ initializeQAdf <- function(measures){
 }
 
 
+
+
+# logical vector of all entries that end in 25 or greater
+check2025 <- function(strings) {
+  logical_vector <- sapply(strings, function(x) {
+    last_two_chars <- substr(x, nchar(x)-1, nchar(x))
+    if (grepl("^[0-9]+$", last_two_chars)) {
+      as.numeric(last_two_chars) >= 25
+    } else {
+      FALSE
+    }
+  })
+  return(logical_vector)
+}
+
+# Force Skyra_QC_999999 format
+format_skyraqc <- function(strings) {
+  manipulated_strings <- sapply(strings, function(x) {
+    # Split the string into text and date code parts
+    parts <- strsplit(x, "_|-")[[1]]
+    text_part <- paste(parts[1:2], collapse = "_")
+    date_code <- parts[3]
+
+    # Ensure correct capitalization and replace - with _
+    text_part <- gsub("-", "_", text_part)
+    text_part <- "Skyra_QC"
+
+    # Combine text part and date code
+    manipulated_string <- paste(text_part, date_code, sep = "_")
+    return(manipulated_string)
+  })
+  return(manipulated_strings)
+}
+
+
+# Function to filter directories based on the year and format
+check2025_downloaded <- function(directories) {
+  filtered_directories <- directories[sapply(directories, function(x) {
+    # Check if the directory matches the qc_123456_fbirn format
+    if (grepl("^qc_[0-9]{6}_fbirn$", x)) {
+      # Extract the date part
+      date_part <- strsplit(x, "_")[[1]][2]
+      year <- as.numeric(substr(date_part, 5, 6))
+      # Check if the year is greater than or equal to 25
+      return(year >= 25)
+    } else {
+      return(FALSE)
+    }
+  })]
+  return(filtered_directories)
+}
+
+
+# Function to extract dates from qc_downloaded
+extract_dates_downloaded <- function(directories) {
+  dates <- sapply(directories, function(x) {
+    date_part <- strsplit(x, "_")[[1]][2]
+    return(date_part)
+  })
+  return(dates)
+}
+
+# Function to extract dates from qc_scans_2025$subject_formatted
+extract_dates_scans <- function(subjects) {
+  dates <- sapply(subjects, function(x) {
+    date_part <- strsplit(x, "_")[[1]][3]
+    return(date_part)
+  })
+  return(dates)
+}
+
+LOAD.findNewScans_RXNAT <- function(xnat_renviron, imagefolder, reportfile, blacklist_dates = NULL){
+
+    # See what's downloaded
+  qc_downloaded <- check2025_downloaded(dir(imagefolder))
+
+  # see what's in the report already
+  report <- read.csv(reportfile)
+  report_dates <- unlist(lapply(report$folder, function(x) {strsplit(x,'_')[[1]][2]}))
+
+  # See what's in XNAT
+  # Connect using credentials in Renviron_xnat
+  readRenviron(xnat_renviron)
+  hbic <- Rxnat::xnat_connect('https://xnat.kumc.edu', xnat_name='HBIC')
+
+  # Get qc scans
+  project_ID <- '9999'
+  hbic_exp <- hbic$experiments()
+  qc_scans <- subset(hbic_exp, project == project_ID)
+
+  # filter for names of qc scans 2025 or later
+  qc_scans_2025 <- qc_scans[check2025(qc_scans$subject),]
+  qc_scans_2025$subject_formatted <- format_skyraqc(qc_scans_2025$subject)
+
+  # Extract dates
+  dates_downloaded <- extract_dates_downloaded(qc_downloaded)
+  dates_scans <- extract_dates_scans(qc_scans_2025$subject_formatted)
+
+  #scans_to_download <- qc_scans_2025$subject_formatted[!dates_scans %in% dates_downloaded]
+  dates_to_download <- dates_scans[!dates_scans %in% dates_downloaded]
+  if(!is.null(blacklist_dates)){
+    dates_to_download <- dates_to_download[!dates_to_download %in% blacklist_dates]
+  }
+
+  dates_to_calc <- dates_scans[!dates_scans %in% report_dates]
+  if(!is.null(blacklist_dates)){
+    dates_to_calc <- dates_to_calc[!dates_to_calc %in% blacklist_dates]
+  }
+
+  returndat <- list(get_xnat = dates_to_download,
+                    get_report = dates_to_calc)
+  return(returndat)
+}
+
+LOAD.move_qc_rxnat <- function(date, savedir, xnat_renviron, phantom, conn = NULL){
+  if(is.null(conn)){
+    readRenviron(xnat_renviron)
+    conn <- Rxnat::xnat_connect('https://xnat.kumc.edu', xnat_name='HBIC')
+  }
+  # Get qc scans
+  project_ID <- '9999'
+  hbic_exp <- conn$experiments()
+  qc_scans <- subset(hbic_exp, project == project_ID)
+  qc_scans$subject_formatted <- format_skyraqc(qc_scans$subject)
+
+  dates_scans <- extract_dates_scans(qc_scans$subject_formatted)
+  scans_to_download <- names(dates_scans)[dates_scans %in% date]
+  #date <- c("022625","032825","040325","040825","041425","042225")
+
+
+
+  target_dir <- file.path(savedir,sprintf('%s%s%s',phantom$prefix, date, phantom$suffix))
+
+    if(file.exists(target_dir)){
+      message(sprintf('Skipping %s, target exists', scans_to_download))
+    } else{
+
+      this_scan <- subset(qc_scans, subject_formatted == scans_to_download)
+      if(dim(this_scan)[1]){
+        temp_dir <- tempdir()
+        dl <- Rxnat::download_xnat_dir(conn, this_scan$ID, file_dir = temp_dir, timeout_duration = 600)
+        utils::unzip(file.path(temp_dir,sprintf('%s.zip',this_scan$ID)), exdir = temp_dir)
+        dir.create(target_dir, recursive = TRUE)
+        scans_dir <- list.dirs(temp_dir, recursive = TRUE, full.names = TRUE)
+        scans_dir <- scans_dir[grepl("/scans$", scans_dir)]  # Find the scans directory
+
+        if (length(scans_dir) > 0) {
+          data_dirs <- list.dirs(scans_dir, recursive = FALSE, full.names = TRUE)
+
+          for (dir in data_dirs) {
+            file.copy(dir, target_dir, recursive = TRUE)
+          }
+
+          # Copy dicoms to the structure that hbicQA is looking for, until we can fix hbicQA
+          bold_dir <- dir(target_dir)[grepl('.*EPI.*Bold.*',dir(target_dir))]
+          # Find the data directory
+          data_directory <- find_dcm_directory(file.path(target_dir,bold_dir))
+
+          if (!is.null(data_directory)) {
+            # Create the new directory structure
+            new_directory <- file.path(target_dir, "SCANS", "4", "DICOM")
+            dir.create(new_directory, recursive = TRUE, showWarnings = FALSE)
+
+            # Copy the .dcm files to the new directory
+            dcm_files <- list.files(data_directory, full.names = TRUE)
+            copy_success <- file.copy(dcm_files, new_directory)
+          }
+
+        }
+      }
+    }
+  }
+
+
+# Function to find the directory containing .dcm files
+find_dcm_directory <- function(dir) {
+  subdirs <- list.dirs(dir, recursive = TRUE)
+  for (subdir in subdirs) {
+    dcm_files <- list.files(subdir, pattern = "\\.dcm$", full.names = TRUE)
+    if (length(dcm_files) > 0) {
+      return(subdir)
+    }
+  }
+  return(NULL)
+}
+
+
+
+
