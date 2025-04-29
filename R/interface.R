@@ -10,8 +10,6 @@
 
 #hbicqa(datelist = c(121123), docopyfromraw = FALSE, dofbirn = TRUE, doreports = TRUE, dofigures = TRUE, dohtmlreport = TRUE, doservicereport = FALSE)
 
-#' @export
-hbicqa_newscans <- function()
 
 #' @export
 hbicqa <- function(datelist='lookup_2025',
