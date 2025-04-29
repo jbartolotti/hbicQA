@@ -74,7 +74,7 @@ hbicqa <- function(datelist='lookup_2025',
   }
   qa_measures <- list()
 
-  xnat_conn <- NA
+  xnat_conn <- NULL
   for(p in phantoms){
     for(date in datelist_list[[p$name]]){
       if(!is.na(date)){
@@ -89,7 +89,9 @@ hbicqa <- function(datelist='lookup_2025',
 
       if(docopyfromraw_rxnat){
           conn_notes <- LOAD.move_qc_rxnat(date, file.path(basedir,imagedir), '~/.Renviron_xnat', p,conn = xnat_conn)
-          xnat_conn <- conn_notes$conn
+          if(is.null(xnat_conn)){
+            xnat_conn <- conn_notes$conn
+          }
           message(conn_notes$notes$message)
       }
       #visual inspection function goes here
