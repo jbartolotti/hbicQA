@@ -341,6 +341,8 @@ LOAD.move_qc_rxnat <- function(date, savedir, xnat_renviron, phantom, conn = NUL
         }
       }
     }
+  return(list(conn = conn, notes = list(message = 'message here')))
+
   }
 
 
