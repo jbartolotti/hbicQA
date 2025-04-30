@@ -47,12 +47,12 @@ hbicqa <- function(datelist='lookup_2025',
   if (typeof(datelist) == 'list'){
   datelist_list <- datelist
   #CHARACTER
-  } else if(typeof(datelist)=='character'){
-    if (datelist == 'lookup'){
+  } else if(length(datelist)==1 && typeof(datelist)=='character'){
+    if (length(datelist)==1 && datelist == 'lookup'){
       datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms)
-    } else if(datelist == 'lookup_oneyear'){
+    } else if(length(datelist)==1 && datelist == 'lookup_oneyear'){
       datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms, dayrange = 365)
-    } else if(datelist == 'lookup_2025'){
+    } else if(length(datelist)==1 && datelist == 'lookup_2025'){
       returndat <- LOAD.findNewScans_RXNAT('~/.Renviron_xnat', file.path(basedir,imagedir), file.path(reportdir, 'QA_report_fbirn.csv'),c('022625')) #blacklist 2/26/25
       datelist_list <- list()
       datelist_list$fbirn <- returndat$get_xnat
@@ -68,7 +68,7 @@ hbicqa <- function(datelist='lookup_2025',
       stop("datelist must be either 'lookup', 'lookup_oneyear' a character/number/vector with format MMDDYY (to apply to all phantoms), or a list with a number/vector for each phantom")
     }
   # NUMERIC
-  } else if(typeof(datelist)=='numeric'){
+  } else if(length(datelist)==1 && typeof(datelist)=='numeric'){
     datelist_list <- list()
     for(p in phantoms){ datelist_list[[p$name]] <- datelist}
   }
@@ -182,14 +182,14 @@ fBIRN_html_Report <- function(phantoms, system = 'synapse', report = 'import', l
     figdir <- 'C:\\Users\\j186b025\\Documents\\local_qa\\figures'
   }
 
-  if(report == 'import'){
+  if(length(report) == 1 && report == 'import'){
     report <- list()
     for(p in phantoms){
       report[[p$name]] <- file.path(output_dir, sprintf('QA_Report%s.csv',p$suffix))
     }
   }
 
-  if(longreport == 'calc'){
+  if(length(longreport)==1 && longreport == 'calc'){
     longreport <- list()
     for(p in phantoms){
     longreport[[p$name]] <- PROCESS.getTolerances(report[[p$name]])
@@ -219,7 +219,7 @@ fBIRN_Report <- function(scan_names = 'all',
                          readfrom = NA
                          ){
 
-  if(measures == 'all'){measures <- UTIL.allMeasures()}
+  if(length(measures)==1 && measures == 'all'){measures <- UTIL.allMeasures()}
 
   if(!is.na(readfrom) && length(readfrom)>0 && file.exists(file.path(reportdir,readfrom))){
     read_qa_measures <- read.csv(file.path(reportdir,readfrom))
@@ -237,7 +237,7 @@ fBIRN_Report <- function(scan_names = 'all',
 #' @export
 fBIRN_Figures <- function(phantoms, reports, service_reports = NA, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
   dir.create(file.path(reportdir,figdir),showWarnings = FALSE)
-  if(longreport == 'calc'){
+  if(length(longreport)==1 && longreport == 'calc'){
     longreport <- list()
     for(p in phantoms){
       longreport[[p$name]] <- PROCESS.getTolerances(reports[[p$name]])
