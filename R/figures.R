@@ -30,6 +30,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   current_measures <- as.character()
   oneyeardat <- list()
   oneyeardat_mostrecent <- list()
+  measure_oneyear <- list()
 
   #Get list of measures being used, and create one-year back datasets
   for(p in phantoms){
@@ -187,6 +188,15 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   for(thismeasure in current_measures){
     #1&2 SD, 60 day smooth, individual figures, post first jandate
     measuredat <- subset(bothlong, measure == thismeasure & scandate_epoch > as.numeric(as.Date('010122',format = '%m%d%y')))
+    oneyeardat_bullet <- subset(bothlong, measure == thismeasure & scandate_epoch > as.numeric(Sys.Date()-365) & phantom == 'bullet')
+    oneyearmean_bullet <- mean(oneyeardat_bullet$value, na.rm = TRUE)
+    oneyearsd_bullet <- sd(oneyeardat_bullet$value, na.rm = TRUE)
+
+    oneyeardat_fbirn <- subset(bothlong, measure == thismeasure & scandate_epoch > as.numeric(Sys.Date()-365) & phantom == 'fbirn')
+    oneyearmean_fbirn <- mean(oneyeardat_fbirn$value, na.rm = TRUE)
+    oneyearsd_fbirn <- sd(oneyeardat_fbirn$value, na.rm = TRUE)
+
+
     ggplot2::ggplot(measuredat, ggplot2::aes(x = scandate_epoch, y = value, color = phantom)) +
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
@@ -195,7 +205,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth. X: outside Mean +/- 2SD',thismeasure), y = thismeasure) +
       ggplot2::geom_point(alpha = .7) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60), size = 1) +
-      ggplot2::geom_point(data = subset(measuredat, z_value_365 < -2 | z_value_365 > 2), color = 'red', shape = 4, size = 3) +
+      ggplot2::geom_point(data = subset(measuredat, phantom == 'fbirn' & ((value-oneyearmean_fbirn)/oneyearsd_fbirn < -2 | (value-oneyearmean_fbirn)/oneyearsd_fbirn > 2)), color = 'red', shape = 4, size = 3) +
+      ggplot2::geom_point(data = subset(measuredat, phantom == 'bullet' & ((value-oneyearmean_bullet)/oneyearsd_bullet < -2 | (value-oneyearmean_bullet)/oneyearsd_bullet > 2)), color = 'red', shape = 4, size = 3) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30)) +
       ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none')+
       ggplot2::coord_cartesian(xlim = c(as.numeric(as.Date('010122',format = '%m%d%y')),NA))
@@ -219,7 +230,6 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
         ggplot2::geom_line(ggplot2::aes(y = value_smooth60)) +
         ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none') +
         ggplot2::scale_fill_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none') +
-        ggplot2::geom_point(data = subset(measuredat, z_value_365 < -2 | z_value_365 > 2), color = 'red', shape = 4, size = 3) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30)) +
         ggplot2::coord_cartesian(xlim = c(as.numeric(as.Date(jandates[1],format = '%m%d%y')), as.numeric(Sys.Date())),ylim = yextents[[thismeasure]], expand = FALSE)
       if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_bullet_fbirn_sites.png',thismeasure)),width = 6, height = 4, dpi = 200)}
