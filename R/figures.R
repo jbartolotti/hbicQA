@@ -202,9 +202,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
       ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
-      ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth. Ribbon: +/- 2SD',thismeasure), y = thismeasure) +
-      ggplot2::geom_ribbon(data = subset(measuredat, phantom == 'fbirn' & scandate_epoch > as.numeric(as.Date('2023-01-01'))), ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd365, ymax = value_smooth60+2*value_smooth_sd365),
-                           fill = '#AAAAAA', alpha = .5, color = '#AAAAAA') +
+      ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth',thismeasure), y = thismeasure) +
+#      ggplot2::geom_ribbon(data = subset(measuredat, phantom == 'fbirn' & scandate_epoch > as.numeric(as.Date('2023-01-01'))), ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd365, ymax = value_smooth60+2*value_smooth_sd365),
+#                           fill = '#AAAAAA', alpha = .5, color = '#AAAAAA') +
       ggplot2::geom_point(alpha = .7) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60), size = 1) +
 #      ggplot2::geom_point(data = subset(measuredat, phantom == 'fbirn' & ((value-oneyearmean_fbirn)/oneyearsd_fbirn < -2 | (value-oneyearmean_fbirn)/oneyearsd_fbirn > 2)), color = 'red', shape = 4, size = 3) +
