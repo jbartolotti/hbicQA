@@ -203,10 +203,12 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
       ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
       ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth. X: outside Mean +/- 2SD',thismeasure), y = thismeasure) +
+      ggplot2::geom_ribbon(data = subset(measuredat, phantom == 'fbirn' & scandate_epoch > as.numeric(as.Date('2023-01-01'))), ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd60, ymax = value_smooth60+2*value_smooth_sd60),
+                           fill = p$shade, alpha = .25) +
       ggplot2::geom_point(alpha = .7) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60), size = 1) +
-      ggplot2::geom_point(data = subset(measuredat, phantom == 'fbirn' & ((value-oneyearmean_fbirn)/oneyearsd_fbirn < -2 | (value-oneyearmean_fbirn)/oneyearsd_fbirn > 2)), color = 'red', shape = 4, size = 3) +
-      ggplot2::geom_point(data = subset(measuredat, phantom == 'bullet' & ((value-oneyearmean_bullet)/oneyearsd_bullet < -2 | (value-oneyearmean_bullet)/oneyearsd_bullet > 2)), color = 'red', shape = 4, size = 3) +
+#      ggplot2::geom_point(data = subset(measuredat, phantom == 'fbirn' & ((value-oneyearmean_fbirn)/oneyearsd_fbirn < -2 | (value-oneyearmean_fbirn)/oneyearsd_fbirn > 2)), color = 'red', shape = 4, size = 3) +
+#      ggplot2::geom_point(data = subset(measuredat, phantom == 'bullet' & ((value-oneyearmean_bullet)/oneyearsd_bullet < -2 | (value-oneyearmean_bullet)/oneyearsd_bullet > 2)), color = 'red', shape = 4, size = 3) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30)) +
       ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none')+
       ggplot2::coord_cartesian(xlim = c(as.numeric(as.Date('010122',format = '%m%d%y')),NA))
@@ -375,13 +377,13 @@ ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_365, alpha = s
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
   #ggplot2::geom_point(size = 1) + #color = 'black', size = 1) +
-  ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), size = 1, color = good_green) +
-  ggplot2::geom_point(data = subset(dat, z_value_365 >2 | z_value_365 < -2 ), size = 1, color = bad_red) +
-
   ggplot2::geom_line(linewidth = 1) + #color = 'black', size = 1) +
-  ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), ggplot2::aes(fill = good_green),
+  ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), size = 2, color = good_green) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 >2 | z_value_365 < -2 ), size = 2, color = bad_red) +
+
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >= -2 ), ggplot2::aes(fill = good_green),
                        color = 'black', size = 2, shape = 21, stroke = 1 ) +
-  ggplot2::geom_point(data = subset(dat, z_value_365 >2 & z_value_365 < -2 ), ggplot2::aes(fill = bad_red),
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 & z_value_365 < -2 ), ggplot2::aes(fill = bad_red),
                       color = 'black', size = 2, shape = 21, stroke = 1 ) +
   ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
   ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
