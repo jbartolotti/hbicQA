@@ -320,7 +320,6 @@ The two drift measures quantify the extent of the change in the mean signal over
 Drift is calculated as the range in the raw signal divided by the mean signal and expressed as a percentage. *100 × (maximum raw signal - minimum raw signal) / signal summary*.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_drift_1-60_2-60_bullet_fbirn.png'))
 
 ```
@@ -331,7 +330,6 @@ Instead of using the max and min raw signals as above, a second-order polynomial
 Drift (Fit) is calculated as *100 × (maximum fit value - minimum fit value) / signal summary*.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_driftfit_1-60_2-60_bullet_fbirn.png'))
 ```
 
@@ -341,7 +339,6 @@ Fluctuation measures temporal stability across the image. Stable scanners averag
 First, a second-order polynomial is fit to the average timeseries. The mean signal intensity (average across voxels across time, before detrending), and the SD of the residuals to the fit line are computed. **Percent Fluctuation** is expressed as a percentage, and calculated *100 × (SD of residuals) / (mean signal intensity)*.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet_fbirn.png'))
 ```
 
@@ -353,7 +350,6 @@ The coefficient of variation (CV) is the SD of a time-series divided by the mean
 First, the CV is calculated for the full central ROI (i.e., 21x21 voxels). The **Radius of Decorrelation** is defined as the width of the theoretical square ROI (with completely independent voxels) that yields the same CV as the measured CV for the 21x21 ROI. Higher values are better.
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_rdc_1-60_2-60_bullet_fbirn.png'))
 ```
 
@@ -367,7 +363,6 @@ SFNR measures signal stability over time -- signal power relative to temporal no
 **Signal-to-Fluctuation-Noise Ratio (SFNR)**: The **Signal Image** is divided by the **Temporal Fluctuation Noise Image** voxel by voxel. The average across voxels is the SFNR value charted below. 
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_SFNR_1-60_2-60_bullet_fbirn.png'))
 ```
 
@@ -381,26 +376,5 @@ SNR measure signal stability across the image voxels.
 SNR is calculated by dividing the Signal Summary by the Variance Summary. *SNR = signal summary / sqrt(variance summary / 198 timepoints)*
 
 ```{r echo = FALSE}
-knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60_bullet.png'))
 knitr::include_graphics(file.path(figdir,'measure_SNR_1-60_2-60_bullet_fbirn.png'))
-```
-
-## Site Comparisons
-
-Scanner metrics are overlayed on QA data using the fBIRN phantom from thirteen sites. Sites performed monthly QA scans over 3-4 years. Sites are marked by color. For discussion, see:
-
-Kayvanrad, A., et al. (2021). Resting state fMRI scanner instabilities revealed by longitudinal phantom scans in a multi-center study. *Neuroimage*, 237, 118197. doi: 10.1016/j.neuroimage.2021.118197.
-
-NB: Lower is better for Drift, Drift (fit), and Percent Fluc.
-
-Higher is better for RDC, SFNR, and SNR.
-
-The most comparable site below is St. Mike’s Hospital, Toronto, in <b><span style=color:#D575FD>purple</span></b>, which used a Siemens Skyra with a 20-Ch Head Coil.
-
-```{r echo = FALSE}
-knitr::include_graphics(c(file.path(figdir,'measure_drift_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_driftfit_1-60_2-60_bullet_fbirn_sites.png')))
-knitr::include_graphics(c(file.path(figdir,'measure_percentFluc_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_rdc_1-60_2-60_bullet_fbirn_sites.png')))
-knitr::include_graphics(c(file.path(figdir,'measure_SNR_1-60_2-60_bullet_fbirn_sites.png'), file.path(figdir,'measure_SFNR_1-60_2-60_bullet_fbirn_sites.png')))
-
-
 ```

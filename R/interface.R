@@ -198,6 +198,15 @@ fBIRN_html_Report <- function(phantoms, system = 'synapse', report = 'import', l
 
   rmarkdown::render(system.file('extdata','report.Rmd', package = 'hbicQA'),
       output_dir = output_dir,
+      output_file = sprintf('3T_QA_Report_Full_%s.html',format(Sys.Date(), format = '%Y_%m_%d')),
+      params = list(
+        phantoms = phantoms,
+        longreport = longreport,
+        figdir = path.expand(figdir)
+      )
+  )
+  rmarkdown::render(system.file('extdata','report_short.Rmd', package = 'hbicQA'),
+      output_dir = output_dir,
       output_file = sprintf('3T_QA_Report_%s.html',format(Sys.Date(), format = '%Y_%m_%d')),
       params = list(
         phantoms = phantoms,

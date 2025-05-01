@@ -41,7 +41,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     oneyeardat[[p$name]] <- subset(thisreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
     oneyeardat[[p$name]]$measure_phantom <- paste(oneyeardat[[p$name]]$measure, p$name, sep = '_')
     oneyeardat[[p$name]]$phantom <- p$name
-    oneyeardat[[p$name]]$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
+    oneyeardat[[p$name]]$z_value_365 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
       (oneyeardat[[p$name]]$value[x] - mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)) / sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)
     }))
     oneyeardat_mostrecent[[p$name]] <- oneyeardat[[p$name]][oneyeardat[[p$name]]$scandate_epoch == max(oneyeardat[[p$name]]$scandate_epoch, na.rm = TRUE),]
@@ -104,14 +104,14 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     phantoms$bullet$line = lineorange
     phantoms$bullet$darkline = darklineorange
     phantoms$bullet$dot_outline_good = dot_outline_good_bullet
-    phantoms$bullet$dot_outline_bad = dot_outline_good_bullet
+    phantoms$bullet$dot_outline_bad = dot_outline_bad_bullet
   }
   if(any('fbirn' %in% names(phantoms))){
   phantoms$fbirn$shade = shadeblue
   phantoms$fbirn$line = lineblue
   phantoms$fbirn$darkline = darklineblue
   phantoms$fbirn$dot_outline_good = dot_outline_good_fbirn
-  phantoms$fbirn$dot_outline_bad = dot_outline_good_fbirn
+  phantoms$fbirn$dot_outline_bad = dot_outline_bad_fbirn
   }
 
   index = 0
@@ -195,9 +195,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth. X: outside Mean +/- 2SD',thismeasure), y = thismeasure) +
       ggplot2::geom_point(alpha = .7) +
       ggplot2::geom_line(ggplot2::aes(y = value_smooth60), size = 1) +
-      ggplot2::geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red', shape = 4, size = 3) +
+      ggplot2::geom_point(data = subset(measuredat, z_value_365 < -2 | z_value_365 > 2), color = 'red', shape = 4, size = 3) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30)) +
-      ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line))+
+      ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none')+
       ggplot2::coord_cartesian(xlim = c(as.numeric(as.Date('010122',format = '%m%d%y')),NA))
 
     if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_bullet_fbirn.png',thismeasure)),width = 6, height = 4, dpi = 200)}
@@ -217,9 +217,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
         ggplot2::labs(x = '',title = sprintf('%s. 60day smooth, compared to 13 sites',thismeasure) , y = thismeasure) +
         ggplot2::geom_point(ggplot2::aes(fill = phantom), color = 'black', shape = 21) +
         ggplot2::geom_line(ggplot2::aes(y = value_smooth60)) +
-        ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line)) +
-        ggplot2::scale_fill_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line)) +
-        ggplot2::geom_point(data = subset(measuredat, value < value_smooth60-2*value_smooth_sd60 | value > value_smooth60+2*value_smooth_sd60), color = 'red', shape = 4, size = 3) +
+        ggplot2::scale_color_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none') +
+        ggplot2::scale_fill_manual(values = c(phantoms$bullet$line, phantoms$fbirn$line), guide = 'none') +
+        ggplot2::geom_point(data = subset(measuredat, z_value_365 < -2 | z_value_365 > 2), color = 'red', shape = 4, size = 3) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30)) +
         ggplot2::coord_cartesian(xlim = c(as.numeric(as.Date(jandates[1],format = '%m%d%y')), as.numeric(Sys.Date())),ylim = yextents[[thismeasure]], expand = FALSE)
       if(dosave){ggplot2::ggsave(file.path(figdir,sprintf('measure_%s_1-60_2-60_bullet_fbirn_sites.png',thismeasure)),width = 6, height = 4, dpi = 200)}
@@ -298,7 +298,7 @@ oldfigures = function(){
 
 FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, dot_outline_good, dot_outline_bad){
   #zscore dotplot 60 days, 1&2sd calced on 365 to present
-  ggplot2::ggplot(dat, ggplot2::aes(x = measure, y = z_value_smooth60, alpha = scandate_epoch)) +
+  ggplot2::ggplot(dat, ggplot2::aes(x = measure, y = z_value_365, alpha = scandate_epoch)) +
     ggplot2::theme_bw() +
     ggplot2::scale_x_discrete() +
     ggplot2::annotate('rect',xmin = 0, xmax = num_measures+1, ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
@@ -306,13 +306,13 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
     ggbeeswarm::geom_quasirandom(width = .2, size = 2) +
     # ggbeeswarm::geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
     #                             width = .2, size = 2) +
-    ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 ),
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >=-2 ),
                         color = dot_outline_good, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
-    ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2),
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 | z_value_365 < -2),
                         color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
 
     ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
-    ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD \nPhantom: %s',Sys.Date()-60,Sys.Date(), phantom_name)) +
+    ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD',Sys.Date()-60,Sys.Date())) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, size = 14, vjust = .5))
   if(dosave){
     ggplot2::ggsave(file.path(figdir,sprintf('60day_dotplot_sd365%s_%s.png',suffix,phantom_name)),width = min(6,round(num_measures*2/3)), height = 5, dpi = 200)
@@ -325,7 +325,7 @@ FIGURES.zscoredotplot_both <- function(dat, lastscan, figdir, suffix, phantom_na
 mylabs = rep('',num_measures*2)
 mylabs[seq(1,num_measures*2,2)] = sort(current_measures)
 
-ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alpha = scandate_epoch, shape = phantom)) +
+ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_365, alpha = scandate_epoch, shape = phantom)) +
   ggplot2::theme_bw() +
   ggplot2::scale_x_discrete(labels = mylabs) + #breaks = seq(1,11,2)) +
   ggplot2::annotate('rect',xmin = 0, xmax = (num_measures*2)+1, ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
@@ -333,13 +333,13 @@ ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alp
   ggbeeswarm::geom_quasirandom(width = .2, size = 2) +
   # ggbeeswarm::geom_quasirandom(data = subset(oneyeardat, scandate_epoch > as.numeric(Sys.Date())-60 & scandate_epoch < max(oneyeardat$scandate_epoch, na.rm = TRUE)),
   #                             width = .2, size = 2) +
-  ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 & phantom == phantom_names[1]),
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >=-2 & phantom == phantom_names[1]),
                       color = dot_outline_good, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
-  ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2 & phantom == phantom_names[1]),
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 | z_value_365 < -2 & phantom == phantom_names[1]),
                       color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
-  ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 <=2 & z_value_smooth60 >=-2 & phantom == phantom_names[2]),
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >=-2 & phantom == phantom_names[2]),
                       color = dot_outline_good, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
-  ggplot2::geom_point(data = subset(lastscan, z_value_smooth60 >2 | z_value_smooth60 < -2 & phantom == phantom_names[2]),
+  ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 | z_value_365 < -2 & phantom == phantom_names[2]),
                       color = dot_outline_bad, fill = 'black', size = 3, shape = 24, stroke = 1.5 ) +
   ggplot2::geom_vline(xintercept = seq(.5,(num_measures*2)+.5,2)) +
   #   ggplot2::coord_cartesian(xlim = c(.5, num_measures*2+.5)), expand = FALSE)
@@ -356,21 +356,28 @@ ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_smooth60, alp
 }
 
 FIGURES.zscorelineplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, mycolors, numcol, numrow){
+  good_green <- '#3CA61C'
+  bad_red <- '#E12A1B'
 
 #zscore facet lineplot 60 days, 1&2sd calced on 365 to present
-ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_smooth60, alpha = scandate_epoch, color = phantom)) +
+ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_365, alpha = scandate_epoch, color = phantom)) +
   ggplot2::theme_bw() +
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -2, ymax = 2, fill = '#98B6FA', alpha = .4) +
   ggplot2::annotate('rect',xmin = as.numeric(Sys.Date()-60), xmax = as.numeric(Sys.Date()), ymin = -1, ymax = 1, fill = '#98B6FA', alpha = .3) +
-  ggplot2::geom_point(size = 1) + #color = 'black', size = 1) +
+  #ggplot2::geom_point(size = 1) + #color = 'black', size = 1) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), size = 1, color = good_green) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 >2 | z_value_365 < -2 ), size = 1, color = bad_red) +
+
   ggplot2::geom_line(linewidth = 1) + #color = 'black', size = 1) +
-  ggplot2::geom_point(data = lastscan, ggplot2::aes(fill = phantom),
+  ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), ggplot2::aes(fill = good_green),
                        color = 'black', size = 2, shape = 21, stroke = 1 ) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 >2 & z_value_365 < -2 ), ggplot2::aes(fill = bad_red),
+                      color = 'black', size = 2, shape = 21, stroke = 1 ) +
   ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
   ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
   ggplot2::facet_wrap(.~measure, ncol = numcol) +
-  ggplot2::scale_color_manual(values = mycolors) +
-  ggplot2::scale_fill_manual(values = mycolors) +
+  ggplot2::scale_color_manual(values = mycolors, guide = 'none') +
+  ggplot2::scale_fill_manual(values = mycolors, guide = 'none') +
   ggplot2::scale_x_continuous(breaks = dat$scandate_epoch,
                               labels = format(as.Date(dat$scandate_epoch, origin = '1970-01-01'), format = '%m-%d')) +
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, size = 12, vjust = .5))
