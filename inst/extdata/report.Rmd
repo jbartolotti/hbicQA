@@ -327,7 +327,7 @@ knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bull
  
 ## Historical Data
 
-Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans.
+Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red vertical lines indicate dates of gradient changes: 2022-08-19, 2023-11-25, and 2025-03-20.
 
 
 The **Central ROI**, a 21 × 21 ROI centered in the middle of the image is used to calculate all QA metrics below.

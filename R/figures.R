@@ -203,7 +203,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
-      ggplot2::geom_vline(xintercept = gradient_epochs, color = '#FFBBBB') +
+      ggplot2::geom_vline(xintercept = gradient_epochs, color = '#FFAAAA') +
 
       ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
       ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth',thismeasure), y = thismeasure) +
