@@ -89,6 +89,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
 
     )
 
+  gradient_dates <- c('2022-08-19', '2023-11-25', '2025-03-20')
+  gradient_epochs <- as.numeric(as.Date(gradient_dates))
 
 
   #3/2 ratio for figure size.
@@ -201,6 +203,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
       ggplot2::theme_bw() +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(jandates,format = '%m%d%y')), color = 'black') +
       ggplot2::geom_vline(xintercept = as.numeric(as.Date(dates,format = '%m%d%y')), color = '#CCCCCC') +
+      ggplot2::geom_vline(xintercept = gradient_epochs, color = '#FFBBBB') +
+
       ggplot2::scale_x_continuous(breaks = as.numeric(as.Date(jandates,format = '%m%d%y')), labels = as.character(as.Date(jandates, format = '%m%d%y'))) +
       ggplot2::labs(x = '',title = sprintf('%s. Line: 60day smooth',thismeasure), y = thismeasure) +
 #      ggplot2::geom_ribbon(data = subset(measuredat, phantom == 'fbirn' & scandate_epoch > as.numeric(as.Date('2023-01-01'))), ggplot2::aes(y = value_smooth60, ymin = value_smooth60-2*value_smooth_sd365, ymax = value_smooth60+2*value_smooth_sd365),
