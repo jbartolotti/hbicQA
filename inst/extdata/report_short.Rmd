@@ -49,21 +49,41 @@ lastscan[[p$name]] <- longreport[[p$name]][longreport[[p$name]]$scandate_epoch =
 lastscan[[p$name]] <- lastscan[[p$name]][!is.na(lastscan[[p$name]]$scandate_epoch),]
 lastscandate_str[[p$name]] <- format(as.Date(unique(lastscan[[p$name]]$scandate_epoch),origin = '1970-01-01'),'%m-%d-%y')
 
-lastscan_checkpass <- lastscan[[p$name]][lastscan[[p$name]]$measure %in% these_measures,]
-allpass <- all(lastscan_checkpass$value <= lastscan_checkpass$value_smooth365+2*lastscan_checkpass$value_smooth_sd365 & lastscan_checkpass$value >= lastscan_checkpass$value_smooth365-2*lastscan_checkpass$value_smooth_sd365) 
-if(allpass){
-  passcolor[[p$name]] = text_green
-  passtext[[p$name]] = 'All metrics in acceptable range.'
-} else {
-  passcolor[[p$name]] = text_red
-  passtext[[p$name]] = 'Attention: metrics out of range.'
-}
+#lastscan_checkpass <- lastscan[[p$name]][lastscan[[p$name]]$measure %in% these_measures,]
+#allpass <- all(lastscan_checkpass$value <= lastscan_checkpass$value_smooth365+2*lastscan_checkpass$value_smooth_sd365 & lastscan_checkpass$value >= lastscan_checkpass$value_smooth365-2*lastscan_checkpass$value_smooth_sd365) 
+#if(allpass){
+#  passcolor[[p$name]] = text_green
+#  passtext[[p$name]] = 'All metrics in acceptable range.'
+#} else {
+#  passcolor[[p$name]] = text_red
+#  passtext[[p$name]] = 'Attention: metrics out of range.'
+#}
 
 
 oneyeardat[[p$name]] <- subset(longreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
   oneyeardat[[p$name]]$z_value_smooth60 <- unlist(lapply(1:dim(oneyeardat[[p$name]])[1], function(x){
     (oneyeardat[[p$name]]$value[x] - mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)) / sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == oneyeardat[[p$name]]$measure[x]],na.rm = TRUE)
     }))
+  eachpass <- rep(FALSE,1,length(these_measures))
+  index <- 0
+  for(m in these_measures){
+    index <- index+1
+    oneyearmeas <- subset(oneyeardat[[p$name]], measure == m)
+    vv <- lastscan[[p$name]]$value[lastscan[[p$name]]$measure == m]
+    mm <- mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == m],na.rm = TRUE)
+    ss <- sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == m],na.rm = TRUE)
+    eachpass[index] <- abs((vv-mm)/ss) <= 2
+  }
+  if(all(eachpass)){
+    passcolor[[p$name]] = text_green
+    passtext[[p$name]] = 'All metrics in acceptable range.'
+  } else {
+    passcolor[[p$name]] = text_red
+    passtext[[p$name]] = 'Attention: metrics out of range.'
+  }
+
+
+  
   }
 }
 
@@ -116,7 +136,7 @@ for(p in phantoms){
   
   myheader <- paste0(myheader, p$pretty_name, paste0(rep('&nbsp;',(tablechar[[p$name]]$maxchar+4) -nchar(p$pretty_name)), collapse = ''),collapse = '')
                      
-  myheader <- paste0(myheader, '1Yr Mean [+/- 2SD]', paste0(rep('&nbsp;',(tablechar[[p$name]]$maxchar_msd+4) - nchar('1Yr Mean [2SD]')), collapse = ''), collapse = '' )
+  myheader <- paste0(myheader, '1Yr Mean [+/- 2SD]', paste0(rep('&nbsp;',(tablechar[[p$name]]$maxchar_msd+4) - nchar('1Yr Mean [+/- 2SD]')), collapse = ''), collapse = '' )
   }
 }
 
