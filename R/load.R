@@ -116,6 +116,7 @@ LOAD.readQAMeasures <- function(basedir, analysisdir, measures, phantom, read_qa
       rr <- dim(qa_measures[1])
       qa_measures[rr,'folder'] <- qa
       qa_measures[rr,'scandate'] <- UTIL.readMeasure('scandate',qa_xml_file)
+      qa_measures[rr,'color'] <- 'auto'
       for (mm in measures)
       {
         qa_measures[rr,mm] <- as.numeric(UTIL.readMeasure(mm,qa_xml_file)[1])
@@ -163,9 +164,10 @@ LOAD.listQADirs <- function(basedir,analysisdir, phantom, scan_names='all',scans
 initializeQAdf <- function(measures){
   qa_measures <- data.frame(folder = as.character(),
                             scandate = as.character(),
+                            color = as.character(),
                             stringsAsFactors = FALSE)
   qa_measures <- data.frame(matrix(nrow = 0, ncol = 2+length(measures)))
-  colnames(qa_measures) <- c('folder','scandate',measures)
+  colnames(qa_measures) <- c('folder','scandate','color',measures)
   return(qa_measures)
 }
 
