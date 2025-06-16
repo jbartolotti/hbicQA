@@ -162,11 +162,11 @@ LOAD.listQADirs <- function(basedir,analysisdir, phantom, scan_names='all',scans
 }
 
 initializeQAdf <- function(measures){
-  qa_measures <- data.frame(folder = as.character(),
-                            scandate = as.character(),
-                            color = as.character(),
-                            stringsAsFactors = FALSE)
-  qa_measures <- data.frame(matrix(nrow = 0, ncol = 2+length(measures)))
+  #qa_measures <- data.frame(folder = as.character(),
+  #                          scandate = as.character(),
+  #                          color = as.character(),
+  #                          stringsAsFactors = FALSE)
+  qa_measures <- data.frame(matrix(nrow = 0, ncol = 3+length(measures)))
   colnames(qa_measures) <- c('folder','scandate','color',measures)
   return(qa_measures)
 }
