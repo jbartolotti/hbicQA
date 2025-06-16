@@ -71,7 +71,7 @@ PROCESS.getTolerances <- function(report, dofigures = FALSE, remove_duplicate_ro
     report <- read.csv(report)
   }
   longreport <- reshape2::melt(data.table::setDT(report),
-                     id.vars = c('folder','scandate','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
+                     id.vars = c('folder','scandate','color','folder_date','folder_epoch',"scandate_epoch",'epoch_delta'),
                      variable.name = "measure",)
   longreport <- as.data.frame(longreport)
   dayrange <- 30
