@@ -27,6 +27,7 @@ hbicqa <- function(datelist='lookup_2025',
                    dohtmlreport = FALSE,
                    doservicereport = FALSE,
                    scans_after_epoch = 'all',
+                   config = list(historical_start = '2023-01-01'),
                    phantoms = list('bullet' = list(name = 'bullet',pretty_name = 'Bullet',
                                                    prefix = 'qc_', postprocess_prefix = 'QC_',
                                                    suffix = '', postprocess_suffix = '',
@@ -154,7 +155,7 @@ hbicqa <- function(datelist='lookup_2025',
     service <- NA
   }
   if (dofigures){
-      fBIRN_Figures(phantoms, myreport, service_reports = service)
+      fBIRN_Figures(phantoms, myreport, config, service_reports = service)
   }
 
   if(dohtmlreport){
@@ -244,7 +245,7 @@ fBIRN_Report <- function(scan_names = 'all',
 }
 
 #' @export
-fBIRN_Figures <- function(phantoms, reports, service_reports = NA, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
+fBIRN_Figures <- function(phantoms, reports, config, service_reports = NA, longreport = 'calc', reportdir = '~/R-Drive/Bartolotti_J/QA', figdir = 'figures', dosave = TRUE){
   dir.create(file.path(reportdir,figdir),showWarnings = FALSE)
   if(length(longreport)==1 && longreport == 'calc'){
     longreport <- list()
@@ -252,6 +253,6 @@ fBIRN_Figures <- function(phantoms, reports, service_reports = NA, longreport = 
       longreport[[p$name]] <- PROCESS.getTolerances(reports[[p$name]])
     }
   }
-  FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), dosave = dosave, service_reports = service_reports)
+  FIGURES.makeFigures(phantoms, longreport, file.path(reportdir,figdir), config, dosave = dosave, service_reports = service_reports)
 
 }
