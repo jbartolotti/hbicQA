@@ -292,7 +292,7 @@ for(p in phantoms){
 
 
 ## 60 day trend  
-Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan (Green = within 2SD, Red = outside 2SD). Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days. For Drift, Drift-Fit, and Percent Fluctuation, *lower is better*. For RDC, SFNR, and SNR, *higher is better*.
+Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan (Green = within 2SD, Red = outside 2SD and poor performance, Blue = outside 2SD and acceptable performance). Black/Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days. For Drift, Drift-Fit, and Percent Fluctuation, *lower is better*. For RDC, SFNR, and SNR, *higher is better*.
 
 ```{r echo = FALSE}
 if(phantoms$fbirn$report$fig60){
@@ -339,7 +339,9 @@ knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bull
  
 ## Historical Data
 
-Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red vertical lines indicate dates of gradient changes:
+Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and light-blue dots are individual QA scans. Other colors indicate room lighting conditions: Black = all lights off. Pink = all lights on. Green = Front lights on + Back lights off. Dark Blue = Back lights on + Front lights off.
+
+Red vertical lines indicate dates of gradient changes:
 
 * 2022-08-19
 * 2023-11-25
