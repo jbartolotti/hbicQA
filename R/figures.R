@@ -89,7 +89,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
 
     )
 
-  gradient_dates <- c('2022-08-19', '2023-11-25', '2025-03-20')
+  gradient_dates <- c('2022-08-19', '2023-11-25', '2025-03-20','2025-07-23')
   gradient_epochs <- as.numeric(as.Date(gradient_dates))
 
 
