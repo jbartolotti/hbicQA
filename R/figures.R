@@ -66,11 +66,15 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   dot_outline_red <- '#E12A1B'
   dot_outline_lime <- '#00FF00'
   dot_outline_pink <- '#FF00FF'
+  dot_outline_blue <- 'blue'
 
   dot_outline_good_bullet <- dot_outline_green
   dot_outline_bad_bullet <- dot_outline_red
   dot_outline_good_fbirn <- dot_outline_green #dot_outline_lime
   dot_outline_bad_fbirn <- dot_outline_red #dot_outline_pink
+  dot_outline_excess_bullet <- dot_outline_blue
+  dot_outline_excess_fbirn <- dot_outline_blue
+
 
   service_colors <- list(
     'cooling' = '#3399FF',
@@ -108,6 +112,8 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     phantoms$bullet$darkline = darklineorange
     phantoms$bullet$dot_outline_good = dot_outline_good_bullet
     phantoms$bullet$dot_outline_bad = dot_outline_bad_bullet
+    phantoms$bullet$dot_outline_excess = dot_outline_excess_bullet
+
   }
   if(any('fbirn' %in% names(phantoms))){
   phantoms$fbirn$shade = shadeblue
@@ -115,6 +121,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   phantoms$fbirn$darkline = darklineblue
   phantoms$fbirn$dot_outline_good = dot_outline_good_fbirn
   phantoms$fbirn$dot_outline_bad = dot_outline_bad_fbirn
+  phantoms$fbirn$dot_outline_excess = dot_outline_excess_fbirn
   }
 
   index = 0
@@ -123,7 +130,7 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
     if(is.data.frame(oneyeardat[[p$name]])){
       FIGURES.zscoredotplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
                             oneyeardat_mostrecent[[p$name]],
-                            figdir, suffix, p$name, dosave, num_measures, p$dot_outline_good, p$dot_outline_bad
+                            figdir, suffix, p$name, dosave, num_measures, p$dot_outline_good, p$dot_outline_bad, p$dot_outline_excess
                             )
       FIGURES.zscorelineplot(subset(oneyeardat[[p$name]], scandate_epoch > as.numeric(Sys.Date())-60),
                             oneyeardat_mostrecent[[p$name]],
@@ -319,7 +326,7 @@ oldfigures = function(){
 
 
 
-FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, dot_outline_good, dot_outline_bad){
+FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, dot_outline_good, dot_outline_bad, dot_outline_excess){
   #zscore dotplot 60 days, 1&2sd calced on 365 to present
   ggplot2::ggplot(dat, ggplot2::aes(x = measure, y = z_value_365, alpha = scandate_epoch)) +
     ggplot2::theme_bw() +
@@ -331,8 +338,14 @@ FIGURES.zscoredotplot <- function(dat, lastscan, figdir, suffix, phantom_name, d
     #                             width = .2, size = 2) +
     ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >=-2 ),
                         color = dot_outline_good, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
-    ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 | z_value_365 < -2),
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 & measure %in% c('drift','driftfit','percentFluc')),
                         color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 < -2 & measure %in% c('rdc','SFNR','SNR')),
+                        color = dot_outline_bad, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 < -2 & measure %in% c('drift','driftfit','percentFluc')),
+                        color = dot_outline_excess, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
+    ggplot2::geom_point(data = subset(lastscan, z_value_365 > 2 & measure %in% c('rdc','SFNR','SNR')),
+                        color = dot_outline_excess, fill = 'black', size = 3, shape = 21, stroke = 1.5 ) +
 
     ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
     ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD',Sys.Date()-60,Sys.Date())) +
@@ -381,6 +394,7 @@ ggplot2::ggplot(dat, ggplot2::aes(x = measure_phantom, y = z_value_365, alpha = 
 FIGURES.zscorelineplot <- function(dat, lastscan, figdir, suffix, phantom_name, dosave, num_measures, mycolors, numcol, numrow){
   good_green <- '#3CA61C'
   bad_red <- '#E12A1B'
+  excess_blue <- 'blue'
 
 #zscore facet lineplot 60 days, 1&2sd calced on 365 to present
 ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_365, alpha = scandate_epoch, color = phantom)) +
@@ -390,12 +404,15 @@ ggplot2::ggplot(dat, ggplot2::aes(x = scandate_epoch, y = z_value_365, alpha = s
   #ggplot2::geom_point(size = 1) + #color = 'black', size = 1) +
   ggplot2::geom_line(linewidth = 1) + #color = 'black', size = 1) +
   ggplot2::geom_point(data = subset(dat, z_value_365 <=2 & z_value_365 >= -2 ), size = 2, color = good_green) +
-  ggplot2::geom_point(data = subset(dat, z_value_365 >2 | z_value_365 < -2 ), size = 2, color = bad_red) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 >2 & measure %in% c('drift','driftfit','percentFluc') ), size = 2, color = bad_red) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 < -2 & measure %in% c('drift','driftfit','percentFluc') ), size = 2, color = excess_blue) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 < -2 & measure %in% c('rdc','SFNR','SNR') ), size = 2, color = bad_red) +
+  ggplot2::geom_point(data = subset(dat, z_value_365 > 2 & measure %in% c('rdc','SFNR','SNR') ), size = 2, color = excess_blue) +
 
-  ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >= -2 ), ggplot2::aes(fill = good_green),
-                       color = 'black', size = 2, shape = 21, stroke = 1 ) +
-  ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 & z_value_365 < -2 ), ggplot2::aes(fill = bad_red),
-                      color = 'black', size = 2, shape = 21, stroke = 1 ) +
+#  ggplot2::geom_point(data = subset(lastscan, z_value_365 <=2 & z_value_365 >= -2 ), ggplot2::aes(fill = good_green),
+#                       color = 'black', size = 2, shape = 21, stroke = 1 ) +
+#  ggplot2::geom_point(data = subset(lastscan, z_value_365 >2 & z_value_365 < -2 ), ggplot2::aes(fill = bad_red),
+#                      color = 'black', size = 2, shape = 21, stroke = 1 ) +
   ggplot2::scale_alpha_continuous(range = c(.2,1), guide = 'none') +
   ggplot2::labs(x = '', y = 'Z Scale', title = sprintf('fBIRN QA, %s to %s\nShaded 1 & 2 SD ',Sys.Date()-60,Sys.Date())) +
   ggplot2::facet_wrap(.~measure, ncol = numcol) +

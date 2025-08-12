@@ -37,6 +37,15 @@ measure_pretty$drift <- 'Drift'
 measure_pretty$driftfit <- 'Drift(Fit)'
 measure_pretty$rdc <- 'RDC'
 
+measure_fail <- list()
+measure_fail$SNR <- -1
+measure_fail$SFNR <- -1
+measure_fail$percentFluc <- 1
+measure_fail$drift <- 1
+measure_fail$driftfit <- 1
+measure_fail$rdc <- -1
+
+
 lastscan <- list()
 lastscandate_str <- list()
 passcolor <- list()
@@ -72,7 +81,10 @@ oneyeardat[[p$name]] <- subset(longreport[[p$name]], scandate_epoch > as.numeric
     vv <- lastscan[[p$name]]$value[lastscan[[p$name]]$measure == m]
     mm <- mean(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == m],na.rm = TRUE)
     ss <- sd(oneyeardat[[p$name]]$value[oneyeardat[[p$name]]$measure == m],na.rm = TRUE)
-    eachpass[index] <- abs((vv-mm)/ss) <= 2
+    #fail if greater than 2 sd, AND in the wrong direction. Otherwise pass. Separate direction check, because if vv == mm then it's NaN.
+    dirfail <- (vv-mm)/abs(vv-mm) == measure_fail[[m]]
+    if (is.na(dirfail)){dirfail <- FALSE}
+    eachpass[index] <- !(abs((vv-mm)/ss) > 2 & dirfail)
   }
   if(all(eachpass)){
     passcolor[[p$name]] = text_green
@@ -280,7 +292,7 @@ for(p in phantoms){
 
 
 ## 60 day trend  
-Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan (Green = within 2SD, Red = outside 2SD). Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days.
+Standardized QA metrics from past 60 days. Outlined dots are from the most recent QA scan (Green = within 2SD, Red = outside 2SD). Grey dots are scans within the past 60 days; Lighter grey = older scans. Shaded regions represent 1 and 2 SDs, based on QA data from the past 365 days. For Drift, Drift-Fit, and Percent Fluctuation, *lower is better*. For RDC, SFNR, and SNR, *higher is better*.
 
 ```{r echo = FALSE}
 if(phantoms$fbirn$report$fig60){
@@ -327,7 +339,13 @@ knitr::include_graphics(file.path(figdir,'60day_lineplot_sd365_coremeasures_bull
  
 ## Historical Data
 
-Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red vertical lines indicate dates of gradient changes: 2022-08-19, 2023-11-25, and 2025-03-20.
+Historical QA metrics from scans using the bullet phantom (orange) and the fBIRN phantom (blue) since 2022. The orange and blue lines represent 60-day smoothing. Orange and blue dots are individual QA scans. Red vertical lines indicate dates of gradient changes:
+
+* 2022-08-19
+* 2023-11-25
+* 2025-03-20
+* 2025-07-23 -- new 20-channel head coil
+
 
 
 The **Central ROI**, a 21 × 21 ROI centered in the middle of the image is used to calculate all QA metrics below.
