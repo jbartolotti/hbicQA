@@ -144,7 +144,10 @@ LOAD.readQAMeasures <- function(basedir, analysisdir, measures, phantom, read_qa
 
 LOAD.listQADirs <- function(basedir,analysisdir, phantom, scan_names='all',scans_after_epoch='all',fixfoldernames=TRUE){
   qa_dirs <- dir(file.path(basedir,analysisdir))
-  qa_dirs <- qa_dirs[grep(sprintf('^%s[0-9]{6}%s$',phantom$postprocess_prefix, phantom$postprocess_suffix),qa_dirs)]
+  date6 <- qa_dirs[grep(sprintf('^%s[0-9]{6}%s$',phantom$postprocess_prefix, phantom$postprocess_suffix),qa_dirs)]
+  date8 <- qa_dirs[grep(sprintf('^%s[0-9]{8}%s$',phantom$postprocess_prefix, phantom$postprocess_suffix),qa_dirs)]
+
+  qa_dirs <- c(date6,date8)
   if(fixfoldernames){qa_dirs <- UTIL.fixQAfoldernames(qa_dirs)}
   if (length(scan_names)>1 || scan_names != 'all'){
     qa_dirs <- qa_dirs[qa_dirs %in% scan_names]

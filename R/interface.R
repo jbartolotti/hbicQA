@@ -54,7 +54,7 @@ hbicqa <- function(datelist='lookup_2025',
     } else if(length(datelist)==1 && datelist == 'lookup_oneyear'){
       datelist_list <- LOAD.findNewScans(rawdir, file.path(basedir,imagedir), phantoms, dayrange = 365)
     } else if(length(datelist)==1 && datelist == 'lookup_2025'){
-      returndat <- LOAD.findNewScans_RXNAT('~/.Renviron_xnat', file.path(basedir,imagedir), file.path(reportdir, 'QA_report_fbirn.csv'),c('022625')) #blacklist 2/26/25
+      returndat <- LOAD.findNewScans_RXNAT('~/.Renviron_xnat', file.path(basedir,imagedir), file.path(reportdir, 'QA_report_fbirn.csv'),c('022625','102725')) #blacklist 2/26/25
       datelist_list <- list()
       datelist_list$fbirn <- returndat$get_xnat
       datelist_list$bullet <- NA
