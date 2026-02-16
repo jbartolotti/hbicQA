@@ -35,8 +35,9 @@ FIGURES.makeFigures_selectedMeasures <- function(phantoms, thisreport, suffix, f
   #Get list of measures being used, and create one-year back datasets
   for(p in phantoms){
     current_measures <- unique(c(current_measures, unique(thisreport[[p$name]]$measure)))
-
     isoneyear <- thisreport[[p$name]]$scandate_epoch > as.numeric(Sys.Date())-365
+    print(thisreport[[p$name]]$scandate_epoch)
+    print(isoneyear)
     if(any(isoneyear)){
 
     oneyeardat[[p$name]] <- subset(thisreport[[p$name]], scandate_epoch > as.numeric(Sys.Date())-365)
